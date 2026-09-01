@@ -1,4 +1,6 @@
 plugins {
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization")
@@ -8,7 +10,7 @@ android {
     namespace = "com.sixteenhalves.orangeadmin"
     compileSdk {
         version =
-            release(36) {
+            release(37) {
                 minorApiLevel = 1
             }
     }
@@ -40,9 +42,11 @@ android {
 }
 
 dependencies {
+    ksp(libs.dagger.hilt.compiler)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
@@ -54,6 +58,7 @@ dependencies {
     implementation(libs.androidx.material3.adaptive.navigation3)
     implementation(libs.kotlinx.serialization)
     implementation(libs.androidx.google.fonts)
+    implementation(libs.dagger.hilt.android)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
