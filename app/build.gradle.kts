@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.kotlinx.serialization)
     implementation(libs.androidx.google.fonts)
     implementation(libs.dagger.hilt.android)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

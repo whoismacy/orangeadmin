@@ -19,20 +19,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.components.shared.SharedTextField
 
 @Composable
-fun CompanyNameScreen(modifier: Modifier = Modifier) {
+fun CompanyNameScreen(
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier.fillMaxSize().padding(16.dp),
         contentAlignment = Alignment.Center,
     ) {
         var companyName by remember { mutableStateOf("") }
+        val companyNameValid = companyName.length >= 8
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -49,6 +52,8 @@ fun CompanyNameScreen(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
 
+                Spacer(Modifier.height(32.dp))
+
                 SharedTextField(
                     value = companyName,
                     onValueChange = { companyName = it },
@@ -57,17 +62,12 @@ fun CompanyNameScreen(modifier: Modifier = Modifier) {
             }
             Spacer(Modifier.height(64.dp))
             Button(
-                onClick = {},
+                onClick = { onNext() },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = companyNameValid,
             ) {
                 Text("Next")
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun CompNSPreview() {
-    CompanyNameScreen()
 }

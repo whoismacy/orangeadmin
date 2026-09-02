@@ -24,21 +24,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CompanyDescriptionScreen(modifier: Modifier = Modifier) {
+fun CompanyDescriptionScreen(
+    onNext: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier.fillMaxSize().padding(16.dp),
         contentAlignment = Alignment.Center,
     ) {
         var companyDescription by remember { mutableStateOf("") }
+        val companyDescriptionMinValid = companyDescription.split(" ").count() >= 10
+        val companyDescriptionMaxValid = companyDescription.split("").count() < 500
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    "Tell us about your business",
+                    "Tell us a little about your business",
                     style =
                         MaterialTheme
                             .typography.headlineSmall
@@ -49,17 +54,21 @@ fun CompanyDescriptionScreen(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
 
+                Spacer(Modifier.height(32.dp))
+
                 OutlinedTextField(
                     value = companyDescription,
                     onValueChange = { companyDescription = it },
                     placeholder = { Text("e.g. A sales company that ............") },
-                    modifier = Modifier.heightIn(min = 400.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 400.dp),
+                    enabled = companyDescriptionMaxValid,
                 )
             }
             Spacer(Modifier.height(64.dp))
             Button(
-                onClick = {},
+                onClick = { onNext() },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = companyDescriptionMinValid,
             ) {
                 Text("Next")
             }

@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
-import com.sixteenhalves.orangeadmin.nav.AuthNavHost
+import com.sixteenhalves.orangeadmin.nav.AppNav
 import com.sixteenhalves.orangeadmin.ui.theme.OrangeAdminTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,7 +20,7 @@ class MainActivity : FragmentActivity() {
         setContent {
             OrangeAdminTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AuthNavHost(Modifier.padding(innerPadding))
+                    AppNav(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
