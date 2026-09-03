@@ -26,3 +26,10 @@ class MainActivity : FragmentActivity() {
         }
     }
 }
+
+/*
+Create Home Screens
+Check e-TIMS
+Wire up repository and Internet connection
+Screens: Dashboard, Inventory, Branches, Settings
+*/
