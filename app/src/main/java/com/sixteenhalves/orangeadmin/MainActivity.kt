@@ -26,10 +26,8 @@ class MainActivity : FragmentActivity() {
         }
     }
 }
-
 /*
-Create Home Screens
-Check e-TIMS
-Wire up repository and Internet connection
-Screens: Dashboard, Inventory, Branches, Settings
+Next time; 29-09-26
+Reading files from the user's phone; .jpg and .csv
+Handling errors gracefully throughout the application
 */
