@@ -27,7 +27,7 @@ fun EntryProviderScope<AppRoute>.mainGraph(
     mainViewModel: MainViewModel,
 ) {
     entry<MainRoutes.HomeRoute> {
-        MainAppShell(backStack = backStack) {
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             HomeScreen(
                 mainViewModel = mainViewModel,
                 onNewBranch =
@@ -37,7 +37,7 @@ fun EntryProviderScope<AppRoute>.mainGraph(
     }
 
     entry<MainRoutes.Inventory> {
-        MainAppShell(backStack = backStack) {
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             InventoryScreen(
                 mainViewModel = mainViewModel,
                 onNewBranch = { backStack.add(MainRoutes.Branches) },
@@ -46,12 +46,12 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         }
     }
     entry<MainRoutes.Branches> {
-        MainAppShell(backStack = backStack) { BranchesScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { BranchesScreen() }
     }
     entry<MainRoutes.Settings> {
-        MainAppShell(backStack = backStack) { SettingsScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsScreen() }
     }
     entry<MainRoutes.CSVImport> {
-        MainAppShell(backStack = backStack) { CSVImportScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { CSVImportScreen() }
     }
 }

@@ -1,12 +1,21 @@
 package com.sixteenhalves.orangeadmin.screens.onboarding
 
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,11 +31,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.R
@@ -34,94 +52,215 @@ import com.sixteenhalves.orangeadmin.R
 @Composable
 fun UploadLogoScreen(
     modifier: Modifier = Modifier,
-    onUpload: () -> Unit = {},
-    onTakePhoto: () -> Unit = {},
     onNext: () -> Unit = {},
-    onSkip: () -> Unit = {},
 ) {
+    val context = LocalContext.current
+    var selectedFile by remember { mutableStateOf<Uri?>(null) }
+
+    val pickFileLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri == null) {
+                Toast.makeText(context, "No file selected", Toast.LENGTH_SHORT).show()
+            } else {
+                selectedFile = uri
+                // handle image
+            }
+        }
+
+    val imageBitmap: ImageBitmap? =
+        remember(selectedFile) {
+            selectedFile?.let { uri ->
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        val source = ImageDecoder.createSource(context.contentResolver, uri)
+                        ImageDecoder.decodeBitmap(source).asImageBitmap()
+                    } else {
+                        @Suppress("DEPRECATION")
+                        MediaStore.Images.Media
+                            .getBitmap(context.contentResolver, uri)
+                            .asImageBitmap()
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+        }
+
     Column(
         modifier =
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.Top,
+                .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Add a logo",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+        HeaderSection()
+
+        LogoUploadCircle(
+            imageBitmap = imageBitmap,
+            onClick = { pickFileLauncher.launch(arrayOf("image/jpeg", "image/png")) },
+        )
+
+        ActionSection(
+            hasImage = imageBitmap != null,
+            onChangeLogo = { pickFileLauncher.launch(arrayOf("image/jpeg", "image/png")) },
+            onNext = onNext,
+        )
+    }
+}
+
+@Composable
+private fun HeaderSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = "Add a logo",
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Upload a high-resolution logo to personalize your store and invoices.",
+            style =
+                MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun LogoUploadCircle(
+    imageBitmap: ImageBitmap?,
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier =
+            Modifier
+                .size(220.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .border(
+                    border =
+                        BorderStroke(
+                            width = 2.dp,
+                            color =
+                                if (imageBitmap != null) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.outlineVariant
+                                },
+                        ),
+                    shape = CircleShape,
+                ).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (imageBitmap != null) {
+            Image(
+                bitmap = imageBitmap,
+                contentDescription = "Selected Logo",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
             )
-            Text(
-                text = "Upload a high-resolution logo to represent your brand.",
-                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-                modifier = Modifier.padding(top = 8.dp),
+        } else {
+            PlaceholderContent()
+        }
+    }
+}
+
+@Composable
+private fun PlaceholderContent() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(16.dp),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(64.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = CircleShape,
+                    ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.baseline_cloud_upload_24),
+                contentDescription = "Upload Icon",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(32.dp),
             )
         }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Tap to upload logo",
+            style =
+                MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                ),
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "PNG or JPG (max 5MB)",
+            style =
+                MaterialTheme.typography.bodySmall.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                ),
+        )
+    }
+}
 
-        Spacer(modifier = Modifier.height(28.dp))
-
-        Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Box(
-                    modifier =
-                        Modifier
-                            .size(280.dp)
-                            .clip(CircleShape)
-                            .border(BorderStroke(2.dp, MaterialTheme.colorScheme.outline), shape = CircleShape)
-                            .clickable { onUpload() }
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow),
-                    contentAlignment = Alignment.Center,
+@Composable
+private fun ActionSection(
+    hasImage: Boolean,
+    onChangeLogo: () -> Unit,
+    onNext: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (hasImage) {
+            OutlinedButton(
+                onClick = onChangeLogo,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_cloud_upload_24),
-                            contentDescription = "Upload",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(48.dp),
-                        )
-                        Text(
-                            "Tap to upload",
-                            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-                        )
-                        Text(
-                            "PNG, JPG up to 5MB",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-                        )
-                    }
-                }
-
-                OutlinedButton(onClick = onTakePhoto, modifier = Modifier.padding(top = 12.dp)) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_photo_camera_24),
-                        contentDescription = "Take a photo",
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Take a photo instead", color = MaterialTheme.colorScheme.primary)
+                    Text("Change Logo")
                 }
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(
-                onClick = onNext,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Next", color = MaterialTheme.colorScheme.onPrimary)
-            }
-
-            OutlinedButton(
-                onClick = onSkip,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-            ) {
-                Text("Skip for now", color = MaterialTheme.colorScheme.primary)
-            }
+        Button(
+            onClick = onNext,
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+        ) {
+            Text(
+                text = if (hasImage) "Continue" else "Skip for now",
+                style = MaterialTheme.typography.titleMedium,
+            )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
     }
 }
 

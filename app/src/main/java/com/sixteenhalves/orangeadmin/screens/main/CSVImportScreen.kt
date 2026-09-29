@@ -1,5 +1,8 @@
 package com.sixteenhalves.orangeadmin.screens.main
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,17 +25,36 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.R
+import com.sixteenhalves.orangeadmin.domain.EventManager
 
 @Composable
 fun CSVImportScreen(modifier: Modifier = Modifier) {
+    var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
+    val pickFileLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts
+                .OpenDocument(),
+        ) { uri ->
+            if (uri == null) {
+                EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("No file Selected: Select a .csv file to continue"))
+            } else {
+                selectedFileUri = uri
+                // handle csv
+            }
+        }
     Column(
         modifier =
             modifier
@@ -126,22 +148,35 @@ fun CSVImportScreen(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
-            onClick = {},
-            modifier = Modifier.fillMaxWidth(0.9f),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(vertical = 4.dp),
+        Column {
+            Button(
+                onClick = { pickFileLauncher.launch(arrayOf("application/csv", "text/csv")) },
+                modifier = Modifier.fillMaxWidth(0.9f),
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.baseline_cloud_upload_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_cloud_upload_24),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Select CSV File")
+                }
+            }
+
+            if (selectedFileUri != null) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "You selected file: $selectedFileUri",
+                    style =
+                        MaterialTheme
+                            .typography.bodySmall
+                            .copy(fontStyle = FontStyle.Italic),
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Select CSV File")
             }
         }
     }

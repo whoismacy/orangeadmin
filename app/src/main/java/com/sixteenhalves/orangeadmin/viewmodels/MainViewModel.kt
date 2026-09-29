@@ -1,10 +1,12 @@
 package com.sixteenhalves.orangeadmin.viewmodels
 
 import android.util.Log
+import androidx.compose.material3.SnackbarHostState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.domain.User
 import com.sixteenhalves.orangeadmin.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +27,8 @@ class MainViewModel
         private val _branchesExist = MutableStateFlow<Boolean>(false)
         val branchesExist = _branchesExist.asStateFlow()
 
+        val snackbarHostState = SnackbarHostState()
+
         init {
             viewModelScope.launch {
                 try {
@@ -35,4 +39,10 @@ class MainViewModel
                 }
             }
         }
+
+        fun triggerEvent(message: String) {
+            EventManager.triggerEvent(EventManager.AppEvent.ShowEvent(message))
+        }
+
+        fun readCsvFile() {}
     }

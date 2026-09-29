@@ -6,6 +6,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.sixteenhalves.orangeadmin.nav.AppNav
@@ -19,9 +20,7 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         setContent {
             OrangeAdminTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AppNav(modifier = Modifier.padding(innerPadding))
-                }
+                AppNav()
             }
         }
     }

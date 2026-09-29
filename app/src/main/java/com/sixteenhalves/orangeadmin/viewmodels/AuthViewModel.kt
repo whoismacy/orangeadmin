@@ -11,6 +11,6 @@ import javax.inject.Inject
 class AuthViewModel
     @Inject
     constructor() : ViewModel() {
-        private val _isLoggedIn: MutableStateFlow<Boolean> = MutableStateFlow(true)
+        private val _isLoggedIn: MutableStateFlow<Boolean> = MutableStateFlow(false)
         val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
     }
