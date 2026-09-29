@@ -1,15 +1,10 @@
 package com.sixteenhalves.orangeadmin.screens.onboarding
 
 import android.content.Context
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -41,19 +36,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.sixteenhalves.orangeadmin.R
 import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.utils.compressImage
 import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
@@ -85,11 +81,6 @@ fun UploadLogoScreen(
             }
         }
 
-    val imageBitmap: ImageBitmap? =
-        remember(selectedFile) {
-            selectedFile?.let { uri -> decodeImageBitmap(context, uri) }
-        }
-
     Column(
         modifier =
             modifier
@@ -102,14 +93,14 @@ fun UploadLogoScreen(
         HeaderSection()
 
         LogoUploadCircle(
-            imageBitmap = imageBitmap,
-            onClick = { pickFileLauncher.launch(arrayOf("image/jpeg", "image/png")) },
+            imageUri = selectedFile,
+            onClick = { pickFileLauncher.launch(arrayOf("image/jpeg")) },
         )
 
         ActionSection(
-            hasImage = imageBitmap != null,
+            hasImage = selectedFile != null,
             isProcessing = isCompressing,
-            onChangeLogo = { pickFileLauncher.launch(arrayOf("image/jpeg", "image/png")) },
+            onChangeLogo = { pickFileLauncher.launch(arrayOf("image/jpeg")) },
             onNext = onNext,
         )
     }
@@ -120,48 +111,34 @@ private suspend fun handleImageUpload(
     uri: Uri,
     authViewModel: AuthViewModel,
 ) {
-    try {
-        val tempRawFile = File(context.cacheDir, "raw_${System.currentTimeMillis()}.jpg")
+    withContext(Dispatchers.IO) {
+        try {
+            val tempRawFile = File(context.cacheDir, "raw_${System.currentTimeMillis()}.jpg")
 
-        context.contentResolver.openInputStream(uri)?.use { inputStream ->
-            FileOutputStream(tempRawFile).use { outputStream ->
-                inputStream.copyTo(outputStream)
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                FileOutputStream(tempRawFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            val compressedFile = compressImage(context, tempRawFile)
+            authViewModel.updateImage(compressedFile)
+
+            if (tempRawFile.exists()) {
+                val deleted = tempRawFile.delete()
+                if (!deleted) {
+                    tempRawFile.deleteOnExit()
+                }
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+
+            withContext(Dispatchers.Main) {
+                EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("Failed to Upload Image!"))
             }
         }
-
-        val compressedFile = compressImage(context, tempRawFile)
-        authViewModel.updateImage(compressedFile)
-
-        if (tempRawFile.exists()) {
-            val deleted = tempRawFile.delete()
-            if (!deleted) {
-                tempRawFile.deleteOnExit()
-            }
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        Log.d("HANDLE IMAGE UPLOAD: UPLOAD LOGO SCREEN", "FAILURE FAILURE ${e.message}")
-        EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("Failed to Upload Image!"))
     }
 }
-
-private fun decodeImageBitmap(
-    context: Context,
-    uri: Uri,
-): ImageBitmap? =
-    try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val source = ImageDecoder.createSource(context.contentResolver, uri)
-            ImageDecoder.decodeBitmap(source).asImageBitmap()
-        } else {
-            @Suppress("DEPRECATION")
-            MediaStore.Images.Media
-                .getBitmap(context.contentResolver, uri)
-                .asImageBitmap()
-        }
-    } catch (_: Exception) {
-        null
-    }
 
 @Composable
 private fun HeaderSection() {
@@ -188,7 +165,7 @@ private fun HeaderSection() {
 
 @Composable
 private fun LogoUploadCircle(
-    imageBitmap: ImageBitmap?,
+    imageUri: Uri?,
     onClick: () -> Unit,
 ) {
     Box(
@@ -202,7 +179,7 @@ private fun LogoUploadCircle(
                         BorderStroke(
                             width = 2.dp,
                             color =
-                                if (imageBitmap != null) {
+                                if (imageUri != null) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.outlineVariant
@@ -212,9 +189,9 @@ private fun LogoUploadCircle(
                 ).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        if (imageBitmap != null) {
-            Image(
-                bitmap = imageBitmap,
+        if (imageUri != null) {
+            AsyncImage(
+                model = imageUri,
                 contentDescription = "Selected Logo",
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
@@ -260,7 +237,7 @@ private fun PlaceholderContent() {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "PNG or JPG (max 5MB)",
+            text = "JPG (max 5MB)",
             style =
                 MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
