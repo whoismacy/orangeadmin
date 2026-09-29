@@ -7,6 +7,7 @@ import com.sixteenhalves.orangeadmin.screens.onboarding.CompanyNameScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CreateAccountScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.LoginScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.UploadLogoScreen
+import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -28,34 +29,57 @@ sealed interface AuthRoutes : AppRoute {
 
     @Serializable
     data object UploadLogoRoute : AuthRoutes
+
+    @Serializable
+    data object ConfirmInformation : AuthRoutes
 }
 
-fun EntryProviderScope<AppRoute>.authGraph(backStack: MutableList<AppRoute>) {
+fun EntryProviderScope<AppRoute>.authGraph(
+    backStack: MutableList<AppRoute>,
+    mainViewModel: MainViewModel,
+) {
     entry<AuthRoutes.AuthLandingRoute> {
-        AuthLandingScreen(
-            onCreateAccount = { backStack.add(AuthRoutes.CreateAccountRoute) },
-            onLogin = { backStack.add(AuthRoutes.LoginScreenRoute) },
-        )
+        AuthShell(mainViewModel = mainViewModel) {
+            AuthLandingScreen(
+                onCreateAccount = { backStack.add(AuthRoutes.CreateAccountRoute) },
+                onLogin = { backStack.add(AuthRoutes.LoginScreenRoute) },
+            )
+        }
     }
     entry<AuthRoutes.CompanyDescriptionRoute> {
-        CompanyDescriptionScreen(onNext = { backStack.add(MainRoutes.HomeRoute) })
+        AuthShell(mainViewModel = mainViewModel) {
+            CompanyDescriptionScreen(
+                onNext =
+                    { backStack.add(AuthRoutes.UploadLogoRoute) },
+            )
+        }
     }
     entry<AuthRoutes.CompanyNameRoute> {
-        CompanyNameScreen(onNext = { backStack.add(AuthRoutes.CompanyDescriptionRoute) })
+        AuthShell(mainViewModel = mainViewModel) {
+            CompanyNameScreen(onNext = {
+                backStack.add(AuthRoutes.CompanyDescriptionRoute)
+            })
+        }
     }
     entry<AuthRoutes.CreateAccountRoute> {
-        CreateAccountScreen(
-            onNext = { backStack.add(AuthRoutes.CompanyNameRoute) },
-            onSignIn = { backStack.add(AuthRoutes.CompanyNameRoute) },
-        )
+        AuthShell(mainViewModel = mainViewModel) {
+            CreateAccountScreen(
+                onNext = { backStack.add(AuthRoutes.CompanyNameRoute) },
+                onSignIn = { backStack.add(AuthRoutes.LoginScreenRoute) },
+            )
+        }
     }
     entry<AuthRoutes.LoginScreenRoute> {
-        LoginScreen(
-            onLogin = { backStack.add(MainRoutes.HomeRoute) },
-            onSignUp = { backStack.add(AuthRoutes.CreateAccountRoute) },
-        )
+        AuthShell(mainViewModel = mainViewModel) {
+            LoginScreen(
+                onLogin = { backStack.add(MainRoutes.HomeRoute) },
+                onSignUp = { backStack.add(AuthRoutes.CreateAccountRoute) },
+            )
+        }
     }
     entry<AuthRoutes.UploadLogoRoute> {
-        UploadLogoScreen { }
+        AuthShell(mainViewModel = mainViewModel) {
+            UploadLogoScreen { }
+        }
     }
 }

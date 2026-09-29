@@ -9,9 +9,22 @@ class UserRepositoryImpl
     constructor(
         private val networkService: NetworkService,
     ) : UserRepository {
-        override suspend fun createUser(): Result<User?> =
+        override suspend fun createUser(
+            email: String,
+            password: String,
+            companyName: String,
+            companyDescription: String,
+            logo: Any?,
+        ): Result<User?> =
             try {
-                val response = networkService.createUser()
+                val response =
+                    networkService.createUser(
+                        email,
+                        password,
+                        companyName,
+                        companyDescription,
+                        logo,
+                    )
                 if (response.isSuccessful) {
                     Result.success(response.body())
                 } else {

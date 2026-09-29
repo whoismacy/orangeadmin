@@ -26,7 +26,6 @@ class MainActivity : FragmentActivity() {
     }
 }
 /*
-Next time; 29-09-26
-Reading files from the user's phone; .jpg and .csv
+compressing and sending the register data as multipart
 Handling errors gracefully throughout the application
 */

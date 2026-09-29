@@ -27,7 +27,7 @@ fun AppNav(
         entryProvider =
             entryProvider {
                 mainGraph(backStack, mainViewModel = mainViewModel)
-                authGraph(backStack)
+                authGraph(backStack, mainViewModel = mainViewModel)
             },
     )
 }

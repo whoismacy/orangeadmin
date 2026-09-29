@@ -1,10 +1,11 @@
 package com.sixteenhalves.orangeadmin.screens.onboarding
 
+import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -34,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +50,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.R
+import com.sixteenhalves.orangeadmin.domain.EventManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun UploadLogoScreen(
@@ -55,15 +61,19 @@ fun UploadLogoScreen(
     onNext: () -> Unit = {},
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var selectedFile by remember { mutableStateOf<Uri?>(null) }
 
     val pickFileLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri == null) {
-                Toast.makeText(context, "No file selected", Toast.LENGTH_SHORT).show()
+                EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("No file Selected"))
             } else {
                 selectedFile = uri
-                // handle image
+                coroutineScope.launch(Dispatchers.IO) {
+                }
+                // handle image; compress the image, save the image's uri to cache;
+                // send to the server as Retrofit's Multipart.Data
             }
         }
 
