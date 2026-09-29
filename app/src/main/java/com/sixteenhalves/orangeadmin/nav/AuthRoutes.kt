@@ -4,9 +4,11 @@ import androidx.navigation3.runtime.EntryProviderScope
 import com.sixteenhalves.orangeadmin.screens.onboarding.AuthLandingScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CompanyDescriptionScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CompanyNameScreen
+import com.sixteenhalves.orangeadmin.screens.onboarding.ConfirmInformationScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CreateAccountScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.LoginScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.UploadLogoScreen
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 import kotlinx.serialization.Serializable
 
@@ -37,6 +39,7 @@ sealed interface AuthRoutes : AppRoute {
 fun EntryProviderScope<AppRoute>.authGraph(
     backStack: MutableList<AppRoute>,
     mainViewModel: MainViewModel,
+    authViewModel: AuthViewModel,
 ) {
     entry<AuthRoutes.AuthLandingRoute> {
         AuthShell(mainViewModel = mainViewModel) {
@@ -49,6 +52,7 @@ fun EntryProviderScope<AppRoute>.authGraph(
     entry<AuthRoutes.CompanyDescriptionRoute> {
         AuthShell(mainViewModel = mainViewModel) {
             CompanyDescriptionScreen(
+                authViewModel = authViewModel,
                 onNext =
                     { backStack.add(AuthRoutes.UploadLogoRoute) },
             )
@@ -56,14 +60,18 @@ fun EntryProviderScope<AppRoute>.authGraph(
     }
     entry<AuthRoutes.CompanyNameRoute> {
         AuthShell(mainViewModel = mainViewModel) {
-            CompanyNameScreen(onNext = {
-                backStack.add(AuthRoutes.CompanyDescriptionRoute)
-            })
+            CompanyNameScreen(
+                authViewModel = authViewModel,
+                onNext = {
+                    backStack.add(AuthRoutes.CompanyDescriptionRoute)
+                },
+            )
         }
     }
     entry<AuthRoutes.CreateAccountRoute> {
         AuthShell(mainViewModel = mainViewModel) {
             CreateAccountScreen(
+                authViewModel = authViewModel,
                 onNext = { backStack.add(AuthRoutes.CompanyNameRoute) },
                 onSignIn = { backStack.add(AuthRoutes.LoginScreenRoute) },
             )
@@ -72,14 +80,20 @@ fun EntryProviderScope<AppRoute>.authGraph(
     entry<AuthRoutes.LoginScreenRoute> {
         AuthShell(mainViewModel = mainViewModel) {
             LoginScreen(
-                onLogin = { backStack.add(MainRoutes.HomeRoute) },
+                authViewModel = authViewModel,
                 onSignUp = { backStack.add(AuthRoutes.CreateAccountRoute) },
             )
         }
     }
     entry<AuthRoutes.UploadLogoRoute> {
         AuthShell(mainViewModel = mainViewModel) {
-            UploadLogoScreen { }
+            UploadLogoScreen(authViewModel = authViewModel) { backStack.add(AuthRoutes.ConfirmInformation) }
+        }
+    }
+
+    entry<AuthRoutes.ConfirmInformation> {
+        AuthShell(mainViewModel = mainViewModel) {
+            ConfirmInformationScreen(authViewModel = authViewModel)
         }
     }
 }

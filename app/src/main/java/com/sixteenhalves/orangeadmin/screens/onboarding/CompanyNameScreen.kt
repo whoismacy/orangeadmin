@@ -21,9 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.components.shared.SharedTextField
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 
 @Composable
 fun CompanyNameScreen(
+    authViewModel: AuthViewModel,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -62,7 +64,10 @@ fun CompanyNameScreen(
             }
             Spacer(Modifier.height(64.dp))
             Button(
-                onClick = { onNext() },
+                onClick = {
+                    authViewModel.updateCompanyName(companyName)
+                    onNext()
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = companyNameValid,
             ) {

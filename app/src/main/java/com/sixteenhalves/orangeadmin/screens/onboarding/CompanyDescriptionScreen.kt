@@ -22,9 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.sixteenhalves.orangeadmin.domain.EventManager
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 
 @Composable
 fun CompanyDescriptionScreen(
+    authViewModel: AuthViewModel,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -66,7 +69,14 @@ fun CompanyDescriptionScreen(
             }
             Spacer(Modifier.height(64.dp))
             Button(
-                onClick = { onNext() },
+                onClick = {
+                    if (companyDescriptionMaxValid) {
+                        authViewModel.updateCompanyDesc(companyDescription)
+                        onNext()
+                    } else {
+                        EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("Maximum word count (500) exceeded."))
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = companyDescriptionMinValid,
             ) {

@@ -43,7 +43,6 @@ android {
 
 dependencies {
     ksp(libs.dagger.hilt.compiler)
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
@@ -64,7 +63,10 @@ dependencies {
     implementation(libs.accompanist)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.gson.converter)
+    implementation(libs.zelory.compressor)
+    implementation(libs.coil.compose)
     testImplementation(libs.junit)
+    implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

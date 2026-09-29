@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -32,11 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.components.shared.SharedTextField
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLogin: () -> Unit = {},
+    authViewModel: AuthViewModel,
     onForgot: () -> Unit = {},
     onSignUp: () -> Unit = {},
 ) {
@@ -127,7 +127,7 @@ fun LoginScreen(
                 }
 
                 Button(
-                    onClick = onLogin,
+                    onClick = { authViewModel.loginToServer(email = emailAddress, password = password) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     enabled = canProceed,

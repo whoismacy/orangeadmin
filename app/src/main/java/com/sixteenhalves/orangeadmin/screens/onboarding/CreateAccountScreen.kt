@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -31,11 +30,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.components.shared.SharedTextField
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 
 @Composable
 fun CreateAccountScreen(
-    modifier: Modifier = Modifier,
+    authViewModel: AuthViewModel,
     onNext: () -> Unit,
+    modifier: Modifier = Modifier,
     onSignIn: () -> Unit = {},
 ) {
     var name by remember { mutableStateOf("") }
@@ -150,8 +151,14 @@ fun CreateAccountScreen(
                 Spacer(Modifier.height(8.dp))
 
                 Button(
-//                onClick = { if (canProceed) onNext(name.trim(), email.trim(), password) },
-                    onClick = { onNext() },
+                    onClick = {
+                        if (canProceed) {
+                            authViewModel.updateEmail(email)
+                            authViewModel.updatePassword(password)
+                            authViewModel.updateName(name)
+                            onNext()
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = canProceed,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),

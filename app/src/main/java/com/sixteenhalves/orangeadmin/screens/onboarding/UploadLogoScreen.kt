@@ -1,11 +1,11 @@
 package com.sixteenhalves.orangeadmin.screens.onboarding
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -47,53 +48,46 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.R
 import com.sixteenhalves.orangeadmin.domain.EventManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import com.sixteenhalves.orangeadmin.utils.compressImage
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun UploadLogoScreen(
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier,
     onNext: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var selectedFile by remember { mutableStateOf<Uri?>(null) }
+    var isCompressing by remember { mutableStateOf(false) }
 
     val pickFileLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) { uri ->
             if (uri == null) {
                 EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("No file Selected"))
-            } else {
-                selectedFile = uri
-                coroutineScope.launch(Dispatchers.IO) {
-                }
-                // handle image; compress the image, save the image's uri to cache;
-                // send to the server as Retrofit's Multipart.Data
+                return@rememberLauncherForActivityResult
+            }
+
+            selectedFile = uri
+            coroutineScope.launch {
+                isCompressing = true
+                handleImageUpload(context, uri, authViewModel)
+                isCompressing = false
             }
         }
 
     val imageBitmap: ImageBitmap? =
         remember(selectedFile) {
-            selectedFile?.let { uri ->
-                try {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                        val source = ImageDecoder.createSource(context.contentResolver, uri)
-                        ImageDecoder.decodeBitmap(source).asImageBitmap()
-                    } else {
-                        @Suppress("DEPRECATION")
-                        MediaStore.Images.Media
-                            .getBitmap(context.contentResolver, uri)
-                            .asImageBitmap()
-                    }
-                } catch (_: Exception) {
-                    null
-                }
-            }
+            selectedFile?.let { uri -> decodeImageBitmap(context, uri) }
         }
 
     Column(
@@ -114,11 +108,60 @@ fun UploadLogoScreen(
 
         ActionSection(
             hasImage = imageBitmap != null,
+            isProcessing = isCompressing,
             onChangeLogo = { pickFileLauncher.launch(arrayOf("image/jpeg", "image/png")) },
             onNext = onNext,
         )
     }
 }
+
+private suspend fun handleImageUpload(
+    context: Context,
+    uri: Uri,
+    authViewModel: AuthViewModel,
+) {
+    try {
+        val tempRawFile = File(context.cacheDir, "raw_${System.currentTimeMillis()}.jpg")
+
+        context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            FileOutputStream(tempRawFile).use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+
+        val compressedFile = compressImage(context, tempRawFile)
+        authViewModel.updateImage(compressedFile)
+
+        if (tempRawFile.exists()) {
+            val deleted = tempRawFile.delete()
+            if (!deleted) {
+                tempRawFile.deleteOnExit()
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.d("HANDLE IMAGE UPLOAD: UPLOAD LOGO SCREEN", "FAILURE FAILURE ${e.message}")
+        EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("Failed to Upload Image!"))
+    }
+}
+
+private fun decodeImageBitmap(
+    context: Context,
+    uri: Uri,
+): ImageBitmap? =
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(context.contentResolver, uri)
+            ImageDecoder.decodeBitmap(source).asImageBitmap()
+        } else {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media
+                .getBitmap(context.contentResolver, uri)
+                .asImageBitmap()
+        }
+    } catch (_: Exception) {
+        null
+    }
 
 @Composable
 private fun HeaderSection() {
@@ -229,6 +272,7 @@ private fun PlaceholderContent() {
 @Composable
 private fun ActionSection(
     hasImage: Boolean,
+    isProcessing: Boolean,
     onChangeLogo: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -242,6 +286,7 @@ private fun ActionSection(
                 onClick = onChangeLogo,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                enabled = !isProcessing,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -265,17 +310,20 @@ private fun ActionSection(
                     .fillMaxWidth()
                     .height(50.dp),
             shape = RoundedCornerShape(12.dp),
+            enabled = !isProcessing,
         ) {
-            Text(
-                text = if (hasImage) "Continue" else "Skip for now",
-                style = MaterialTheme.typography.titleMedium,
-            )
+            if (isProcessing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Text(
+                    text = if (hasImage) "Continue" else "Skip for now",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewUploadLogoScreen() {
-    UploadLogoScreen()
 }
