@@ -94,6 +94,7 @@ fun UploadLogoScreen(
 
         LogoUploadCircle(
             imageUri = selectedFile,
+            isCompressing = isCompressing,
             onClick = { pickFileLauncher.launch(arrayOf("image/jpeg")) },
         )
 
@@ -166,6 +167,7 @@ private fun HeaderSection() {
 @Composable
 private fun LogoUploadCircle(
     imageUri: Uri?,
+    isCompressing: Boolean,
     onClick: () -> Unit,
 ) {
     Box(
@@ -186,7 +188,7 @@ private fun LogoUploadCircle(
                                 },
                         ),
                     shape = CircleShape,
-                ).clickable(onClick = onClick),
+                ).clickable(enabled = !isCompressing, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (imageUri != null) {
