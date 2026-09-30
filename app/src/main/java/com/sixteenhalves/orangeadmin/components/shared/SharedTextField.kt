@@ -1,6 +1,7 @@
 package com.sixteenhalves.orangeadmin.components.shared
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +24,7 @@ fun SharedTextField(
     placeHolderText: String? = null,
     isPassword: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
 ) {
     val passwordVisible = remember { mutableStateOf(false) }
@@ -38,6 +40,7 @@ fun SharedTextField(
         singleLine = singleLine,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         trailingIcon =
             if (isPassword) {
                 {

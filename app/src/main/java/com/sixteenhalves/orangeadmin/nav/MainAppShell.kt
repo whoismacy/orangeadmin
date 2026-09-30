@@ -12,7 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sixteenhalves.orangeadmin.components.shared.LoadingSpinner
 import com.sixteenhalves.orangeadmin.domain.EventManager
+import com.sixteenhalves.orangeadmin.domain.MainApplicationState
 import com.sixteenhalves.orangeadmin.domain.MainScreenNavigationItems
 import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
@@ -25,6 +28,7 @@ fun MainAppShell(
 ) {
     val currentRoute = backStack.last()
     val snackbarHostState = mainViewModel.snackbarHostState
+    val mainApplicationState = mainViewModel.mainApplicationState.collectAsStateWithLifecycle().value
 
     LaunchedEffect(Unit) {
         EventManager.channelFlow.collect { event ->
@@ -62,8 +66,16 @@ fun MainAppShell(
                 SnackbarHost(hostState = snackbarHostState)
             },
         ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
-                content()
+            when (mainApplicationState) {
+                MainApplicationState.Loading -> {
+                    LoadingSpinner()
+                }
+
+                else -> {
+                    Box(modifier = Modifier.padding(paddingValues)) {
+                        content()
+                    }
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.sixteenhalves.orangeadmin.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sixteenhalves.orangeadmin.domain.AuthApplicationState
 import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.ntwk.NetworkService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,9 @@ class AuthViewModel
     ) : ViewModel() {
         private val _isLoggedIn: MutableStateFlow<Boolean> = MutableStateFlow(false)
         val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+        private val _authApplicationState = MutableStateFlow<AuthApplicationState>(AuthApplicationState.Idle)
+        val authApplicationState = _authApplicationState.asStateFlow()
 
         private val _userState = MutableStateFlow(AuthRegisterFlowData())
         val userState = _userState.asStateFlow()
@@ -66,6 +70,7 @@ class AuthViewModel
                     imagePart = MultipartBody.Part.createFormData("logo", file.name, requestFile)
                 }
             }
+            _authApplicationState.value = AuthApplicationState.Loading
             viewModelScope.launch {
                 try {
                     val response =
@@ -95,6 +100,7 @@ class AuthViewModel
             email: String,
             password: String,
         ) {
+            _authApplicationState.value = AuthApplicationState.Loading
             viewModelScope.launch {
                 try {
                     val response =

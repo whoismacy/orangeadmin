@@ -1,6 +1,7 @@
 package com.sixteenhalves.orangeadmin.screens.onboarding
 
 import android.util.Patterns
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -42,17 +44,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.sixteenhalves.orangeadmin.R
 import com.sixteenhalves.orangeadmin.components.shared.SharedTextField
-import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
+import com.sixteenhalves.orangeadmin.domain.EventManager
 
 @Composable
-fun LoginScreen(
-    authViewModel: AuthViewModel,
+fun ForgotPasswordScreen(
     modifier: Modifier = Modifier,
-    onForgot: () -> Unit = {},
-    onSignUp: () -> Unit = {},
+    onClick: () -> Unit = {},
+    onBackToLogin: () -> Unit = onClick,
 ) {
-    val state = rememberLoginState()
+    val state = rememberForgotPasswordState()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    val handleReset = {
+        if (state.canProceed) {
+            Toast.makeText(context, "Reset instructions sent to: ${state.email}", Toast.LENGTH_LONG).show()
+            onClick()
+        }
+    }
 
     Box(
         modifier =
@@ -84,7 +93,7 @@ fun LoginScreen(
                         Modifier
                             .padding(24.dp)
                             .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
                 ) {
                     InputFieldGroup(
                         label = "Email Address",
@@ -94,62 +103,14 @@ fun LoginScreen(
                         keyboardOptions =
                             KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
-                                imeAction = ImeAction.Next,
+                                imeAction = ImeAction.Done,
                             ),
+                        keyboardActions = KeyboardActions(onDone = { handleReset() }),
                         errorMessage = state.emailError,
                     )
 
-                    Column {
-                        InputFieldGroup(
-                            label = "Password",
-                            value = state.password,
-                            onValueChange = { state.password = it },
-                            placeHolderText = "Enter your password",
-                            isPassword = true,
-                            keyboardOptions =
-                                KeyboardOptions(
-                                    keyboardType = KeyboardType.Password,
-                                    imeAction = ImeAction.Done,
-                                ),
-                            keyboardActions =
-                                KeyboardActions(
-                                    onDone = {
-                                        if (state.canProceed) {
-                                            authViewModel.loginToServer(
-                                                email = state.email.trim(),
-                                                password = state.password,
-                                            )
-                                        }
-                                    },
-                                ),
-                            errorMessage = state.passwordError,
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            TextButton(onClick = onForgot) {
-                                Text(
-                                    text = "Forgot Password?",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     Button(
-                        onClick = {
-                            if (state.canProceed) {
-                                authViewModel.loginToServer(
-                                    email = state.email.trim(),
-                                    password = state.password,
-                                )
-                            }
-                        },
+                        onClick = handleReset,
                         modifier =
                             Modifier
                                 .fillMaxWidth()
@@ -158,7 +119,7 @@ fun LoginScreen(
                         enabled = state.canProceed,
                     ) {
                         Text(
-                            text = "Sign In",
+                            text = "Send Reset Link",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                         )
                     }
@@ -172,13 +133,13 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Don't have an account?",
+                    text = "Remember your password?",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TextButton(onClick = onSignUp) {
+                TextButton(onClick = onBackToLogin) {
                     Text(
-                        text = "Sign up",
+                        text = "Sign in",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -188,28 +149,21 @@ fun LoginScreen(
     }
 }
 
-class LoginState {
+class ForgotPasswordState {
     var email by mutableStateOf("")
-    var password by mutableStateOf("")
 
     val isEmailValid: Boolean
         get() = Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 
-    val isPasswordValid: Boolean
-        get() = password.length >= 8
-
     val canProceed: Boolean
-        get() = isEmailValid && isPasswordValid
+        get() = isEmailValid
 
     val emailError: String?
         get() = if (email.isNotEmpty() && !isEmailValid) "Enter a valid email address." else null
-
-    val passwordError: String?
-        get() = if (password.isNotEmpty() && !isPasswordValid) "Password should be at least 8 characters." else null
 }
 
 @Composable
-fun rememberLoginState() = remember { LoginState() }
+fun rememberForgotPasswordState() = remember { ForgotPasswordState() }
 
 @Composable
 private fun HeaderSection() {
@@ -236,7 +190,7 @@ private fun HeaderSection() {
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = "Welcome back",
+            text = "Reset your password",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
@@ -245,7 +199,7 @@ private fun HeaderSection() {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "Sign in to continue to your admin dashboard.",
+            text = "Enter the email address registered with your account and we'll send you instructions to reset your password.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -259,7 +213,6 @@ private fun InputFieldGroup(
     value: String,
     onValueChange: (String) -> Unit,
     placeHolderText: String,
-    isPassword: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     errorMessage: String? = null,
@@ -274,7 +227,6 @@ private fun InputFieldGroup(
             value = value,
             onValueChange = onValueChange,
             placeHolderText = placeHolderText,
-            isPassword = isPassword,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
         )

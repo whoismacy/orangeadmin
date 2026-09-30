@@ -8,16 +8,26 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sixteenhalves.orangeadmin.components.shared.LoadingSpinner
+import com.sixteenhalves.orangeadmin.domain.AuthApplicationState
 import com.sixteenhalves.orangeadmin.domain.EventManager
+import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
 @Composable
 fun AuthShell(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
+    authViewModel: AuthViewModel,
     content: @Composable () -> Unit,
 ) {
     val snackbarHostState = mainViewModel.snackbarHostState
+    val authApplicationState =
+        authViewModel
+            .authApplicationState
+            .collectAsStateWithLifecycle()
+            .value
 
     LaunchedEffect(Unit) {
         EventManager.channelFlow.collect { event ->
@@ -25,7 +35,7 @@ fun AuthShell(
                 is EventManager.AppEvent.ShowEvent -> {
                     snackbarHostState.showSnackbar(
                         message = event.message,
-                        duration = SnackbarDuration.Short,
+                        duration = SnackbarDuration.Long,
                     )
                 }
             }
@@ -36,8 +46,16 @@ fun AuthShell(
             SnackbarHost(snackbarHostState)
         },
     ) { innerPadding ->
-        Box(Modifier.padding(innerPadding)) {
-            content()
+        when (authApplicationState) {
+            is AuthApplicationState.Loading -> {
+                LoadingSpinner()
+            }
+
+            else -> {
+                Box(Modifier.padding(innerPadding)) {
+                    content()
+                }
+            }
         }
     }
 }

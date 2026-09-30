@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sixteenhalves.orangeadmin.domain.EventManager
+import com.sixteenhalves.orangeadmin.domain.MainApplicationState
 import com.sixteenhalves.orangeadmin.domain.User
 import com.sixteenhalves.orangeadmin.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,9 @@ class MainViewModel
 
         private val _branchesExist = MutableStateFlow<Boolean>(false)
         val branchesExist = _branchesExist.asStateFlow()
+
+        private val _mainApplicationState = MutableStateFlow(MainApplicationState.Idle)
+        val mainApplicationState = _mainApplicationState.asStateFlow()
 
         val snackbarHostState = SnackbarHostState()
 

@@ -6,6 +6,7 @@ import com.sixteenhalves.orangeadmin.screens.onboarding.CompanyDescriptionScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CompanyNameScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.ConfirmInformationScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.CreateAccountScreen
+import com.sixteenhalves.orangeadmin.screens.onboarding.ForgotPasswordScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.LoginScreen
 import com.sixteenhalves.orangeadmin.screens.onboarding.UploadLogoScreen
 import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
@@ -27,6 +28,9 @@ sealed interface AuthRoutes : AppRoute {
     data object CreateAccountRoute : AuthRoutes
 
     @Serializable
+    data object ForgotPassword : AuthRoutes
+
+    @Serializable
     data object LoginScreenRoute : AuthRoutes
 
     @Serializable
@@ -42,7 +46,7 @@ fun EntryProviderScope<AppRoute>.authGraph(
     authViewModel: AuthViewModel,
 ) {
     entry<AuthRoutes.AuthLandingRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             AuthLandingScreen(
                 onCreateAccount = { backStack.add(AuthRoutes.CreateAccountRoute) },
                 onLogin = { backStack.add(AuthRoutes.LoginScreenRoute) },
@@ -50,7 +54,7 @@ fun EntryProviderScope<AppRoute>.authGraph(
         }
     }
     entry<AuthRoutes.CompanyDescriptionRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             CompanyDescriptionScreen(
                 authViewModel = authViewModel,
                 onNext =
@@ -59,7 +63,7 @@ fun EntryProviderScope<AppRoute>.authGraph(
         }
     }
     entry<AuthRoutes.CompanyNameRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             CompanyNameScreen(
                 authViewModel = authViewModel,
                 onNext = {
@@ -69,7 +73,7 @@ fun EntryProviderScope<AppRoute>.authGraph(
         }
     }
     entry<AuthRoutes.CreateAccountRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             CreateAccountScreen(
                 authViewModel = authViewModel,
                 onNext = { backStack.add(AuthRoutes.CompanyNameRoute) },
@@ -78,22 +82,31 @@ fun EntryProviderScope<AppRoute>.authGraph(
         }
     }
     entry<AuthRoutes.LoginScreenRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             LoginScreen(
                 authViewModel = authViewModel,
                 onSignUp = { backStack.add(AuthRoutes.CreateAccountRoute) },
+                onForgot = { backStack.add(AuthRoutes.ForgotPassword) },
             )
         }
     }
     entry<AuthRoutes.UploadLogoRoute> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             UploadLogoScreen(authViewModel = authViewModel) { backStack.add(AuthRoutes.ConfirmInformation) }
         }
     }
 
     entry<AuthRoutes.ConfirmInformation> {
-        AuthShell(mainViewModel = mainViewModel) {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
             ConfirmInformationScreen(authViewModel = authViewModel)
+        }
+    }
+
+    entry<AuthRoutes.ForgotPassword> {
+        AuthShell(mainViewModel = mainViewModel, authViewModel = authViewModel) {
+            ForgotPasswordScreen(onClick = {
+                backStack.add(AuthRoutes.LoginScreenRoute)
+            })
         }
     }
 }
