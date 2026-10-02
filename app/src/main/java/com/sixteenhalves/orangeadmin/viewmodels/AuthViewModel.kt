@@ -23,7 +23,7 @@ class AuthViewModel
     constructor(
         private val networkService: NetworkService,
     ) : ViewModel() {
-        private val _isLoggedIn: MutableStateFlow<Boolean> = MutableStateFlow(false)
+        private val _isLoggedIn: MutableStateFlow<Boolean> = MutableStateFlow(true)
         val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
         private val _authApplicationState = MutableStateFlow<AuthApplicationState>(AuthApplicationState.Idle)

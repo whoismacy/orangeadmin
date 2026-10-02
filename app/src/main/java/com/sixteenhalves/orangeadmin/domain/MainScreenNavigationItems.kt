@@ -1,12 +1,15 @@
 package com.sixteenhalves.orangeadmin.domain
 
 import com.sixteenhalves.orangeadmin.R
+import com.sixteenhalves.orangeadmin.nav.AppRoute
+import com.sixteenhalves.orangeadmin.nav.BranchRoutes
 import com.sixteenhalves.orangeadmin.nav.MainRoutes
+import com.sixteenhalves.orangeadmin.nav.SettingsRoutes
 
 enum class MainScreenNavigationItems(
     val title: String,
     val icon: Int,
-    val route: MainRoutes,
+    val route: AppRoute,
 ) {
     Dashboard(
         "Dashboard",
@@ -21,11 +24,11 @@ enum class MainScreenNavigationItems(
     Branches(
         "Branches",
         R.drawable.outline_call_split_24,
-        MainRoutes.Branches,
+        BranchRoutes.Home,
     ),
     Settings(
         "Settings",
         R.drawable.outline_settings_24,
-        MainRoutes.Settings,
+        SettingsRoutes.Home,
     ),
 }

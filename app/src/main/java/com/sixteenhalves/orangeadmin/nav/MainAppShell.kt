@@ -47,6 +47,11 @@ fun MainAppShell(
         modifier = modifier,
         navigationSuiteItems = {
             MainScreenNavigationItems.entries.forEach {
+                val isSelected = when (currentRoute) {
+                    is BranchRoutes -> (it.route == MainRoutes.Branches) || (it.route == BranchRoutes.Home)
+                    is SettingsRoutes -> (it.route == MainRoutes.Settings) || (it.route == SettingsRoutes.Home)
+                    else -> it.route == currentRoute
+                }
                 item(
                     onClick = { backStack.add(it.route) },
                     label = { Text(it.title) },
@@ -56,7 +61,7 @@ fun MainAppShell(
                             contentDescription = null,
                         )
                     },
-                    selected = it.route == currentRoute,
+                    selected = isSelected,
                 )
             }
         },
