@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.gson.converter)
     implementation(libs.zelory.compressor)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.biometric)
     testImplementation(libs.junit)
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

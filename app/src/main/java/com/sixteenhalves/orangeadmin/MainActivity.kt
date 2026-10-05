@@ -3,11 +3,6 @@ package com.sixteenhalves.orangeadmin
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.sixteenhalves.orangeadmin.nav.AppNav
 import com.sixteenhalves.orangeadmin.ui.theme.OrangeAdminTheme
@@ -28,4 +23,12 @@ class MainActivity : FragmentActivity() {
 /*
 compressing and sending the register data as multipart
 Handling errors gracefully throughout the application
+
+remainder;
+updating the api calls change image; change name;
+apis for inventory; restocking; adding a new item; create a class for what an item should look like / done by server;
+api for creating a new branch; name, location, pos-devices; active; sale-metrics
+add biometric functionality api
+add theme functionality api
+add notification functionality
 */

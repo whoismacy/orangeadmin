@@ -22,13 +22,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.FragmentActivity
+import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
 @Composable
-fun SettingsBiometricsScreen(modifier: Modifier = Modifier) {
-    // In a real app, this state would trigger the actual Android BiometricPrompt API logic
-    var isBiometricsEnrolled by remember { mutableStateOf(false) }
+fun SettingsBiometricsScreen(
+    mainViewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    var isBiometricsEnrolled by remember {
+        mutableStateOf(mainViewModel.isBiometricsAvailable(context))
+    }
+
+    // unenroll
+    // hide the two middle screens
 
     Column(
         modifier =
@@ -78,8 +89,11 @@ fun SettingsBiometricsScreen(modifier: Modifier = Modifier) {
                 Switch(
                     checked = isBiometricsEnrolled,
                     onCheckedChange = { isEnrolled ->
-                        // TODO: Implement BiometricPrompt API to actually enroll/unenroll
-                        isBiometricsEnrolled = isEnrolled
+                        if (isEnrolled) {
+                            // unenroll
+                        } else {
+                            mainViewModel.showBiometricPrompt(activity = context as FragmentActivity)
+                        }
                     },
                 )
             }
