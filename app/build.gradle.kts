@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.zelory.compressor)
     implementation(libs.coil.compose)
     implementation(libs.androidx.biometric)
+    implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
     implementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))

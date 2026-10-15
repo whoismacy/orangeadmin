@@ -18,6 +18,7 @@ fun InventoryScreen(
     if (branchesExist) {
         PopulatedInventory()
     } else {
-        EmptyInventory(onNewBranch, onNavigateCSV)
+        PopulatedInventory()
+//        EmptyInventory(onNewBranch, onNavigateCSV)
     }
 }

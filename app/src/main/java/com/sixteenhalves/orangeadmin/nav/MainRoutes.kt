@@ -86,7 +86,7 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             BranchesScreen(
                 onNewBranch = { backStack.add(BranchRoutes.Name) },
-                onBranchClick = { branchId -> backStack.add(BranchRoutes.Detail(branchId)) }
+                onBranchClick = { branchId -> backStack.add(BranchRoutes.Detail(branchId)) },
             )
         }
     }
@@ -141,13 +141,13 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         }
     }
     entry<SettingsRoutes.Theme> {
-        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsThemeScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsThemeScreen(mainViewModel = mainViewModel) }
     }
     entry<SettingsRoutes.Biometrics> {
-        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsBiometricsScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsBiometricsScreen(mainViewModel = mainViewModel) }
     }
     entry<SettingsRoutes.Notifications> {
-        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsNotificationsScreen() }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsNotificationsScreen(mainViewModel = mainViewModel) }
     }
     entry<SettingsRoutes.AppDetails> {
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsAppDetailsScreen() }

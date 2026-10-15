@@ -26,7 +26,9 @@ fun HomeScreen(
         if (branchesExist) {
             PopulatedDashboard()
         } else {
-            EmptyDashboard(onNewBranch)
+            // Using PopulatedDashboard temporarily so you can view it.
+            // Replace with EmptyDashboard(onNewBranch) when testing empty state.
+            PopulatedDashboard()
         }
     }
 }

@@ -13,98 +13,101 @@ import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.sixteenhalves.orangeadmin.domain.EventManager
+import javax.inject.Inject
 
-class BiometricRepository {
-    private val promptInfo =
-        BiometricPrompt.PromptInfo
-            .Builder()
-            .apply {
-                setTitle("Biometric Protection for the application")
-                setSubtitle("Log in using your biometric credential")
-                setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
-            }.build()
+class BiometricRepository
+    @Inject
+    constructor() {
+        private val promptInfo =
+            BiometricPrompt.PromptInfo
+                .Builder()
+                .apply {
+                    setTitle("Biometric Protection for the application")
+                    setSubtitle("Log in using your biometric credential")
+                    setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+                }.build()
 
-    private fun triggerEvent(message: String) {
-        EventManager.triggerEvent(EventManager.AppEvent.ShowEvent(message))
-    }
-
-    fun isBiometricAvailable(context: Context): Boolean {
-        val biometricManager = BiometricManager.from(context)
-        return when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
-            BiometricManager.BIOMETRIC_SUCCESS -> {
-                true
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
-                triggerEvent("No biometric hardware available")
-                false
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
-                triggerEvent("No biometric hardware available")
-                false
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                triggerEvent("No biometrics enrolled")
-                false
-            }
-
-            else -> {
-                false
-            }
+        private fun triggerEvent(message: String) {
+            EventManager.triggerEvent(EventManager.AppEvent.ShowEvent(message))
         }
-    }
 
-    fun showBiometricPrompt(
-        activity: FragmentActivity,
-        onSuccess: () -> Unit,
-        onFailure: () -> Unit,
-    ) {
-        val executor = ContextCompat.getMainExecutor(activity)
-        val biometricPrompt =
-            BiometricPrompt(
-                activity,
-                executor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationError(
-                        errorCode: Int,
-                        errString: CharSequence,
-                    ) {
-                        super.onAuthenticationError(errorCode, errString)
-                        triggerEvent("Biometric Authentication error: $errString")
-                        onFailure()
-                    }
-
-                    override fun onAuthenticationFailed() {
-                        super.onAuthenticationFailed()
-                        onFailure()
-                    }
-
-                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                        super.onAuthenticationSucceeded(result)
-                        onSuccess()
-                    }
-                },
-            )
-
-        biometricPrompt.authenticate(promptInfo)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    fun promptEnrollBiometric(context: Context) {
-        try {
-            val enrollIntent =
-                Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
-                    putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, BIOMETRIC_STRONG)
+        fun isBiometricAvailable(context: Context): Boolean {
+            val biometricManager = BiometricManager.from(context)
+            return when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+                BiometricManager.BIOMETRIC_SUCCESS -> {
+                    true
                 }
-            if (context is FragmentActivity) {
-                context.startActivity(enrollIntent)
+
+                BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
+                    triggerEvent("No biometric hardware available")
+                    false
+                }
+
+                BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
+                    triggerEvent("No biometric hardware available")
+                    false
+                }
+
+                BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                    triggerEvent("No biometrics enrolled")
+                    false
+                }
+
+                else -> {
+                    false
+                }
             }
-        } catch (e: ActivityNotFoundException) {
-            if (context is FragmentActivity) {
-                context.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
+        }
+
+        fun showBiometricPrompt(
+            activity: FragmentActivity,
+            onSuccess: () -> Unit,
+            onFailure: () -> Unit,
+        ) {
+            val executor = ContextCompat.getMainExecutor(activity)
+            val biometricPrompt =
+                BiometricPrompt(
+                    activity,
+                    executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationError(
+                            errorCode: Int,
+                            errString: CharSequence,
+                        ) {
+                            super.onAuthenticationError(errorCode, errString)
+                            triggerEvent("Biometric Authentication error: $errString")
+                            onFailure()
+                        }
+
+                        override fun onAuthenticationFailed() {
+                            super.onAuthenticationFailed()
+                            onFailure()
+                        }
+
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            onSuccess()
+                        }
+                    },
+                )
+
+            biometricPrompt.authenticate(promptInfo)
+        }
+
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun promptEnrollBiometric(context: Context) {
+            try {
+                val enrollIntent =
+                    Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+                        putExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, BIOMETRIC_STRONG)
+                    }
+                if (context is FragmentActivity) {
+                    context.startActivity(enrollIntent)
+                }
+            } catch (e: ActivityNotFoundException) {
+                if (context is FragmentActivity) {
+                    context.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
+                }
             }
         }
     }
-}

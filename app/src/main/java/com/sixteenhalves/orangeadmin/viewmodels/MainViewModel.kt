@@ -10,13 +10,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.domain.MainApplicationState
+import com.sixteenhalves.orangeadmin.domain.NotificationPreferences
+import com.sixteenhalves.orangeadmin.domain.ThemePreference
 import com.sixteenhalves.orangeadmin.domain.User
 import com.sixteenhalves.orangeadmin.repository.BiometricRepository
+import com.sixteenhalves.orangeadmin.repository.SettingsPreferencesRepository
 import com.sixteenhalves.orangeadmin.repository.UserRepository
-import dagger.hilt.android.internal.Contexts
+import com.sixteenhalves.orangeadmin.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,15 +32,30 @@ class MainViewModel
     constructor(
         private val userRepository: UserRepository,
         private val biometricRepository: BiometricRepository,
+        private val settingsPreferencesRepository: SettingsPreferencesRepository,
     ) : ViewModel() {
         private val _user = MutableLiveData<User?>()
         val user = _user as LiveData<User?>
 
-        private val _branchesExist = MutableStateFlow<Boolean>(false)
+        private val _branchesExist = MutableStateFlow(false)
         val branchesExist = _branchesExist.asStateFlow()
 
         private val _mainApplicationState = MutableStateFlow(MainApplicationState.Idle)
         val mainApplicationState = _mainApplicationState.asStateFlow()
+
+        val themePreference: StateFlow<ThemePreference> =
+            settingsPreferencesRepository.themePreference.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = ThemePreference.SYSTEM_DEFAULT,
+            )
+
+        val notificationPreferences: StateFlow<NotificationPreferences> =
+            settingsPreferencesRepository.notificationPreferences.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = NotificationPreferences(),
+            )
 
         val snackbarHostState = SnackbarHostState()
 
@@ -57,6 +78,36 @@ class MainViewModel
 
         fun showBiometricPrompt(activity: FragmentActivity) {
             biometricRepository.showBiometricPrompt(activity, onFailure = {}, onSuccess = {})
+        }
+
+        fun updateTheme(themePreference: ThemePreference) {
+            viewModelScope.launch {
+                settingsPreferencesRepository.updateThemePreference(themePreference)
+            }
+        }
+
+        fun updateNotificationPreferences(
+            lowStockAlerts: Boolean? = null,
+            notificationSound: Boolean? = null,
+            notificationVibration: Boolean? = null,
+        ) {
+            viewModelScope.launch {
+                settingsPreferencesRepository.updateNotificationPreference(
+                    lowStockAlerts = lowStockAlerts,
+                    notificationSound = notificationSound,
+                    notificationVibration = notificationVibration,
+                )
+            }
+        }
+
+        fun testNotification(context: Context) {
+            val currentPrefs = notificationPreferences.value
+            NotificationHelper.showLowStockNotification(
+                context = context,
+                itemName = "Navel Oranges",
+                remainingStock = 2,
+                preferences = currentPrefs
+            )
         }
 
         fun readCsvFile() {}

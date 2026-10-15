@@ -1,5 +1,10 @@
 package com.sixteenhalves.orangeadmin.screens.main
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,15 +28,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
 @Composable
-fun SettingsNotificationsScreen(modifier: Modifier = Modifier) {
-    // In a real app, these would be backed by Preferences/DataStore
-    var lowStockAlerts by remember { mutableStateOf(true) }
-    var notificationSound by remember { mutableStateOf(true) }
-    var notificationVibration by remember { mutableStateOf(false) }
+fun SettingsNotificationsScreen(
+    mainViewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val notificationPrefs by mainViewModel.notificationPreferences.collectAsStateWithLifecycle()
 
     Column(
         modifier =
@@ -61,31 +71,69 @@ fun SettingsNotificationsScreen(modifier: Modifier = Modifier) {
         ) {
             Column(
                 modifier = Modifier.padding(vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp) // Subtle spacing between items
+                verticalArrangement = Arrangement.spacedBy(8.dp), // Subtle spacing between items
             ) {
                 NotificationToggle(
                     title = "Low Stock Alerts",
                     subtitle = "Get notified when inventory is running dangerously low.",
-                    checked = lowStockAlerts,
-                    onCheckedChange = { lowStockAlerts = it },
+                    checked = notificationPrefs.lowStockAlerts,
+                    onCheckedChange = { mainViewModel.updateNotificationPreferences(lowStockAlerts = it) },
                 )
 
                 NotificationToggle(
                     title = "Notification Sound",
                     subtitle = "Play a sound when an alert is received.",
-                    checked = notificationSound,
-                    onCheckedChange = { notificationSound = it },
-                    enabled = lowStockAlerts,
+                    checked = notificationPrefs.notificationSound,
+                    onCheckedChange = { mainViewModel.updateNotificationPreferences(notificationSound = it) },
+                    enabled = notificationPrefs.lowStockAlerts,
                 )
 
                 NotificationToggle(
                     title = "Vibration",
                     subtitle = "Vibrate the device when an alert is received.",
-                    checked = notificationVibration,
-                    onCheckedChange = { notificationVibration = it },
-                    enabled = lowStockAlerts,
+                    checked = notificationPrefs.notificationVibration,
+                    onCheckedChange = { mainViewModel.updateNotificationPreferences(notificationVibration = it) },
+                    enabled = notificationPrefs.lowStockAlerts,
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Test Notification Button
+        val context = LocalContext.current
+        val permissionLauncher =
+            rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission(),
+            ) { isGranted ->
+                if (isGranted) {
+                    mainViewModel.testNotification(context)
+                } else {
+                    mainViewModel.triggerEvent("Permission required to show notifications")
+                }
+            }
+
+        Button(
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    val status =
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS,
+                        )
+                    if (status == PackageManager.PERMISSION_GRANTED) {
+                        mainViewModel.testNotification(context)
+                    } else {
+                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                } else {
+                    mainViewModel.testNotification(context)
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Text("Test Low Stock Notification", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
         }
     }
 }
@@ -118,7 +166,14 @@ private fun NotificationToggle(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                color =
+                    if (enabled) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = 0.5f,
+                        )
+                    },
             )
         }
 

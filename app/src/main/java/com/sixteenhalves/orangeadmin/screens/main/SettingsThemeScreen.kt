@@ -31,13 +31,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sixteenhalves.orangeadmin.R
+import com.sixteenhalves.orangeadmin.domain.ThemePreference
+import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
 @Composable
-fun SettingsThemeScreen(modifier: Modifier = Modifier) {
-    // In a real app, this state should be hoisted to a ViewModel and saved in DataStore/Preferences
-    var selectedTheme by remember { mutableStateOf("System Default") }
-    val themes = listOf("System Default", "Light", "Dark")
+fun SettingsThemeScreen(
+    mainViewModel: MainViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val themePreference by mainViewModel.themePreference.collectAsStateWithLifecycle()
+
+    val themes =
+        listOf(
+            ThemePreference.SYSTEM_DEFAULT,
+            ThemePreference.LIGHT,
+            ThemePreference.DARK,
+        )
 
     Column(
         modifier =
@@ -68,9 +79,13 @@ fun SettingsThemeScreen(modifier: Modifier = Modifier) {
             Column {
                 themes.forEachIndexed { index, theme ->
                     ThemeOptionItem(
-                        title = theme,
-                        isSelected = selectedTheme == theme,
-                        onClick = { selectedTheme = theme },
+                        title =
+                            theme.name
+                                .replace("_", " ")
+                                .lowercase()
+                                .replaceFirstChar { it.uppercase() },
+                        isSelected = themePreference == theme,
+                        onClick = { mainViewModel.updateTheme(theme) },
                     )
                     if (index < themes.size - 1) {
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
@@ -101,21 +116,22 @@ private fun ThemeOptionItem(
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = if (isSelected) FontWeight.Black else FontWeight.SemiBold),
             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
         )
-        
+
         if (isSelected) {
             Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center,
             ) {
                 // Using a generic checkmark representation or proxy icon
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_add_circle_outline_24), // Swap with check icon if available
                     contentDescription = "Selected",
                     tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(16.dp),
                 )
             }
         }
