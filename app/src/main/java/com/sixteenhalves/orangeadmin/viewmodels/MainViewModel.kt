@@ -86,16 +86,10 @@ class MainViewModel
             }
         }
 
-        fun updateNotificationPreferences(
-            lowStockAlerts: Boolean? = null,
-            notificationSound: Boolean? = null,
-            notificationVibration: Boolean? = null,
-        ) {
+        fun updateNotificationPreferences(lowStockAlerts: Boolean? = null) {
             viewModelScope.launch {
                 settingsPreferencesRepository.updateNotificationPreference(
                     lowStockAlerts = lowStockAlerts,
-                    notificationSound = notificationSound,
-                    notificationVibration = notificationVibration,
                 )
             }
         }
@@ -106,9 +100,7 @@ class MainViewModel
                 context = context,
                 itemName = "Navel Oranges",
                 remainingStock = 2,
-                preferences = currentPrefs
+                preferences = currentPrefs,
             )
         }
-
-        fun readCsvFile() {}
     }

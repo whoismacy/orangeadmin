@@ -79,28 +79,11 @@ fun SettingsNotificationsScreen(
                     checked = notificationPrefs.lowStockAlerts,
                     onCheckedChange = { mainViewModel.updateNotificationPreferences(lowStockAlerts = it) },
                 )
-
-                NotificationToggle(
-                    title = "Notification Sound",
-                    subtitle = "Play a sound when an alert is received.",
-                    checked = notificationPrefs.notificationSound,
-                    onCheckedChange = { mainViewModel.updateNotificationPreferences(notificationSound = it) },
-                    enabled = notificationPrefs.lowStockAlerts,
-                )
-
-                NotificationToggle(
-                    title = "Vibration",
-                    subtitle = "Vibrate the device when an alert is received.",
-                    checked = notificationPrefs.notificationVibration,
-                    onCheckedChange = { mainViewModel.updateNotificationPreferences(notificationVibration = it) },
-                    enabled = notificationPrefs.lowStockAlerts,
-                )
             }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Test Notification Button
         val context = LocalContext.current
         val permissionLauncher =
             rememberLauncherForActivityResult(

@@ -21,14 +21,4 @@ class MainActivity : FragmentActivity() {
     }
 }
 /*
-compressing and sending the register data as multipart
-Handling errors gracefully throughout the application
-
-remainder;
-updating the api calls change image; change name;
-apis for inventory; restocking; adding a new item; create a class for what an item should look like / done by server;
-api for creating a new branch; name, location, pos-devices; active; sale-metrics
-add biometric functionality api
-add theme functionality api
-add notification functionality
 */

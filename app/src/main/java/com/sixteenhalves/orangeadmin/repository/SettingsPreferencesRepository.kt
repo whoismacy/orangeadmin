@@ -23,8 +23,6 @@ class SettingsPreferencesRepository
     ) {
         private val THEME_KEY = stringPreferencesKey("theme_preference")
         private val LOW_STOCK_ALERTS_KEY = booleanPreferencesKey("low_stock_alerts")
-        private val NOTIFICATION_SOUND_KEY = booleanPreferencesKey("notification_sound")
-        private val NOTIFICATION_VIBRATION_KEY = booleanPreferencesKey("notification_vibration")
 
         val themePreference: Flow<ThemePreference> =
             context.dataStore.data.map { preferences ->
@@ -36,8 +34,6 @@ class SettingsPreferencesRepository
             context.dataStore.data.map { preferences ->
                 NotificationPreferences(
                     lowStockAlerts = preferences[LOW_STOCK_ALERTS_KEY] ?: true,
-                    notificationSound = preferences[NOTIFICATION_SOUND_KEY] ?: true,
-                    notificationVibration = preferences[NOTIFICATION_VIBRATION_KEY] ?: false,
                 )
             }
 
@@ -47,15 +43,9 @@ class SettingsPreferencesRepository
             }
         }
 
-        suspend fun updateNotificationPreference(
-            lowStockAlerts: Boolean? = null,
-            notificationSound: Boolean? = null,
-            notificationVibration: Boolean? = null,
-        ) {
+        suspend fun updateNotificationPreference(lowStockAlerts: Boolean? = null) {
             context.dataStore.edit { preferences ->
                 lowStockAlerts?.let { preferences[LOW_STOCK_ALERTS_KEY] = it }
-                notificationSound?.let { preferences[NOTIFICATION_SOUND_KEY] = it }
-                notificationVibration?.let { preferences[NOTIFICATION_VIBRATION_KEY] = it }
             }
         }
     }
