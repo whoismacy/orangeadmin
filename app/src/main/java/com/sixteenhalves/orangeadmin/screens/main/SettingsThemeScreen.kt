@@ -126,9 +126,8 @@ private fun ThemeOptionItem(
                         .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center,
             ) {
-                // Using a generic checkmark representation or proxy icon
                 Icon(
-                    painter = painterResource(id = R.drawable.baseline_add_circle_outline_24), // Swap with check icon if available
+                    painter = painterResource(id = R.drawable.outline_check_24),
                     contentDescription = "Selected",
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp),

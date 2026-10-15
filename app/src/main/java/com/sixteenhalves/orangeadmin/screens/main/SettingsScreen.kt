@@ -59,12 +59,11 @@ fun SettingsScreen(
 ) {
     val scrollState = rememberScrollState()
 
-    // In a real app, this data would come from the ViewModel
     var userName by remember { mutableStateOf("Admin User") }
     val userEmail = "admin@company.com"
     var userAvatarUri by remember { mutableStateOf<Uri?>(null) }
     val fallbackAvatarUrl = "https://i.pravatar.cc/150?img=11"
-    
+
     var showProfileSheet by remember { mutableStateOf(false) }
 
     Column(
@@ -87,7 +86,7 @@ fun SettingsScreen(
             email = userEmail,
             imageUrl = fallbackAvatarUrl,
             imageUri = userAvatarUri,
-            onClick = { showProfileSheet = true }
+            onClick = { showProfileSheet = true },
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -100,35 +99,35 @@ fun SettingsScreen(
         ) {
             Column {
                 SettingsListItem(
-                    iconResId = R.drawable.baseline_visibility_24,
+                    iconResId = R.drawable.outline_format_paint_24,
                     title = "Theme",
-                    subtitle = "System Default",
+                    subtitle = "Light / Dark / System Default",
                     onClick = onNavigateTheme,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 SettingsListItem(
-                    iconResId = R.drawable.baseline_visibility_off_24,
+                    iconResId = R.drawable.outline_fingerprint_24,
                     title = "Biometrics",
-                    subtitle = "Fingerprint enabled",
+                    subtitle = "Enable Biometric Authentication",
                     onClick = onNavigateBiometrics,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 SettingsListItem(
-                    iconResId = R.drawable.baseline_cloud_upload_24,
+                    iconResId = R.drawable.outline_add_alert_24,
                     title = "Notifications",
-                    subtitle = "On",
+                    subtitle = "Allow Notifications for important Store events",
                     onClick = onNavigateNotifications,
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 SettingsListItem(
-                    iconResId = R.drawable.baseline_space_dashboard_24,
+                    iconResId = R.drawable.baseline_info_24,
                     title = "App Details",
                     subtitle = "Version 1.0.0",
                     onClick = onNavigateAppDetails,
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(80.dp))
     }
 
@@ -142,7 +141,7 @@ fun SettingsScreen(
                 userName = newName
                 userAvatarUri = newImageUri
                 showProfileSheet = false
-            }
+            },
         )
     }
 }
@@ -157,13 +156,14 @@ private fun AvatarCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .clickable { onClick() },
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
             modifier =
@@ -203,12 +203,12 @@ private fun AvatarCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                 )
             }
-            
+
             Icon(
                 painter = painterResource(id = R.drawable.outline_settings_24), // Proxy edit icon
                 contentDescription = "Edit Profile",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
         }
     }
@@ -223,39 +223,41 @@ private fun SettingsListItem(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 24.dp, vertical = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(horizontal = 24.dp, vertical = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface),
-            contentAlignment = Alignment.Center
+            modifier =
+                Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 painter = painterResource(iconResId),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
-        
+
         Spacer(modifier = Modifier.width(20.dp))
-        
+
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title, 
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), 
-                color = MaterialTheme.colorScheme.onSurface
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = subtitle, 
-                style = MaterialTheme.typography.bodyMedium, 
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -285,56 +287,59 @@ fun EditProfileBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = "Edit Profile",
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
-            
+
             Spacer(modifier = Modifier.height(32.dp))
 
             // Avatar Edit Section
             Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .clickable { imagePickerLauncher.launch("image/*") },
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .clickable { imagePickerLauncher.launch("image/*") },
+                contentAlignment = Alignment.Center,
             ) {
                 AsyncImage(
                     model = imageUri ?: fallbackImageUrl,
                     contentDescription = "Profile Photo",
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
                 // Overlay to indicate editability
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_photo_camera_24),
                         contentDescription = "Change Photo",
                         tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(32.dp),
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             TextButton(onClick = { imagePickerLauncher.launch("image/*") }) {
                 Text("Change Photo", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
             }
@@ -347,7 +352,7 @@ fun EditProfileBottomSheet(
                     text = "Full Name",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = 8.dp),
                 )
                 SharedTextField(
                     value = name,
@@ -360,15 +365,16 @@ fun EditProfileBottomSheet(
 
             Button(
                 onClick = { onSave(name, imageUri) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
                 shape = RoundedCornerShape(16.dp),
-                enabled = name.isNotBlank()
+                enabled = name.isNotBlank(),
             ) {
                 Text("Save Changes", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

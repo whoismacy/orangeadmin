@@ -33,7 +33,7 @@ class SettingsPreferencesRepository
         val notificationPreferences: Flow<NotificationPreferences> =
             context.dataStore.data.map { preferences ->
                 NotificationPreferences(
-                    lowStockAlerts = preferences[LOW_STOCK_ALERTS_KEY] ?: true,
+                    lowStockAlerts = preferences[LOW_STOCK_ALERTS_KEY] ?: false,
                 )
             }
 
