@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -45,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.sixteenhalves.orangeadmin.R
 import com.sixteenhalves.orangeadmin.domain.EventManager
-import com.sixteenhalves.orangeadmin.utils.compressImage
 import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -62,7 +60,6 @@ fun UploadLogoScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var selectedFile by remember { mutableStateOf<Uri?>(null) }
-    var isCompressing by remember { mutableStateOf(false) }
 
     val pickFileLauncher =
         rememberLauncherForActivityResult(
@@ -75,9 +72,7 @@ fun UploadLogoScreen(
 
             selectedFile = uri
             coroutineScope.launch {
-                isCompressing = true
                 handleImageUpload(context, uri, authViewModel)
-                isCompressing = false
             }
         }
 
@@ -94,13 +89,11 @@ fun UploadLogoScreen(
 
         LogoUploadCircle(
             imageUri = selectedFile,
-            isCompressing = isCompressing,
             onClick = { pickFileLauncher.launch(arrayOf("image/jpeg")) },
         )
 
-        ActionSection(
+        ActionSectionLogo(
             hasImage = selectedFile != null,
-            isProcessing = isCompressing,
             onChangeLogo = { pickFileLauncher.launch(arrayOf("image/jpeg")) },
             onNext = onNext,
         )
@@ -121,19 +114,9 @@ private suspend fun handleImageUpload(
                     inputStream.copyTo(outputStream)
                 }
             }
-
-            val compressedFile = compressImage(context, tempRawFile)
-            authViewModel.updateImage(compressedFile)
-
-            if (tempRawFile.exists()) {
-                val deleted = tempRawFile.delete()
-                if (!deleted) {
-                    tempRawFile.deleteOnExit()
-                }
-            }
+            authViewModel.updateImage(tempRawFile)
         } catch (e: Throwable) {
             e.printStackTrace()
-
             withContext(Dispatchers.Main) {
                 EventManager.triggerEvent(EventManager.AppEvent.ShowEvent("Failed to Upload Image!"))
             }
@@ -167,7 +150,6 @@ private fun HeaderSection() {
 @Composable
 private fun LogoUploadCircle(
     imageUri: Uri?,
-    isCompressing: Boolean,
     onClick: () -> Unit,
 ) {
     Box(
@@ -188,7 +170,7 @@ private fun LogoUploadCircle(
                                 },
                         ),
                     shape = CircleShape,
-                ).clickable(enabled = !isCompressing, onClick = onClick),
+                ).clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         if (imageUri != null) {
@@ -249,9 +231,8 @@ private fun PlaceholderContent() {
 }
 
 @Composable
-private fun ActionSection(
+private fun ActionSectionLogo(
     hasImage: Boolean,
-    isProcessing: Boolean,
     onChangeLogo: () -> Unit,
     onNext: () -> Unit,
 ) {
@@ -265,7 +246,6 @@ private fun ActionSection(
                 onClick = onChangeLogo,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                enabled = !isProcessing,
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -289,20 +269,11 @@ private fun ActionSection(
                     .fillMaxWidth()
                     .height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            enabled = !isProcessing,
         ) {
-            if (isProcessing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(
-                    text = if (hasImage) "Continue" else "Skip for now",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
+            Text(
+                text = if (hasImage) "Continue" else "Skip for now",
+                style = MaterialTheme.typography.titleMedium,
+            )
         }
     }
 }
