@@ -27,7 +27,6 @@ import com.sixteenhalves.orangeadmin.R
 @Composable
 fun EmptyInventory(
     onNewBranch: () -> Unit,
-    onNavigateCSV: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -88,12 +87,6 @@ fun EmptyInventory(
                 onClick = { onNewBranch() },
             ) {
                 Text("Create new Branch and add Items")
-            }
-
-            OutlinedButton(
-                onClick = { onNavigateCSV() },
-            ) {
-                Text("Import as CSV")
             }
         }
     }

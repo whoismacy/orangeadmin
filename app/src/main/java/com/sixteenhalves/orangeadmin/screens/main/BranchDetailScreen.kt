@@ -48,6 +48,7 @@ data class InventoryItem(
 fun BranchDetailScreen(
     branchId: String,
     onAddDevice: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scrollState = rememberScrollState()
@@ -76,11 +77,53 @@ fun BranchDetailScreen(
                 .padding(horizontal = 24.dp, vertical = 32.dp),
     ) {
         if (branch == null) {
-            Text(
-                text = "Branch not found",
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
-                color = MaterialTheme.colorScheme.error,
-            )
+            Box(
+                modifier = Modifier.fillMaxSize().padding(top = 64.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                ) {
+                    Column(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_error_24),
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp).background(MaterialTheme.colorScheme.error),
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Branch Not Found",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "We couldn't find the details for this branch. It may have been removed or deactivated.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Button(
+                            onClick = onBack,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(48.dp),
+                        ) {
+                            Text("Return to Branches", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                        }
+                    }
+                }
+            }
             return
         }
 
@@ -93,7 +136,7 @@ fun BranchDetailScreen(
                 Text(
                     text = branch.name,
                     style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -178,9 +221,10 @@ fun BranchDetailScreen(
             SectionHeader("Inventory Management", paddingBottom = 0.dp)
             IconButton(
                 onClick = { /* Add Item */ },
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer)
+                modifier =
+                    Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
@@ -190,7 +234,7 @@ fun BranchDetailScreen(
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -209,13 +253,19 @@ fun BranchDetailScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
                             Text(
-                                text = item.name, 
-                                fontWeight = FontWeight.ExtraBold, 
+                                text = item.name,
+                                fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            val textColor = if (item.isLowStock) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                            val textColor =
+                                if (item.isLowStock) {
+                                    MaterialTheme
+                                        .colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                }
                             val fontWeight = if (item.isLowStock) FontWeight.Bold else FontWeight.Normal
                             Text(
                                 text = "${item.quantity} units remaining",
@@ -228,10 +278,23 @@ fun BranchDetailScreen(
                             shape = RoundedCornerShape(12.dp),
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                             modifier = Modifier.height(40.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (item.isLowStock) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = if (item.isLowStock) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
-                            )
+                            colors =
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        if (item.isLowStock) {
+                                            MaterialTheme
+                                                .colorScheme.errorContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.secondaryContainer
+                                        },
+                                    contentColor =
+                                        if (item.isLowStock) {
+                                            MaterialTheme
+                                                .colorScheme.onErrorContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.onSecondaryContainer
+                                        },
+                                ),
                         ) {
                             Text("Restock", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                         }
@@ -255,9 +318,10 @@ fun BranchDetailScreen(
             if (devicesCount > 0) {
                 IconButton(
                     onClick = onAddDevice,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
+                    modifier =
+                        Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
@@ -293,20 +357,20 @@ fun BranchDetailScreen(
                     Text(
                         text = "No POS Devices",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "You haven't added any POS devices to this branch yet.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
                         onClick = onAddDevice,
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(48.dp)
+                        modifier = Modifier.height(48.dp),
                     ) {
                         Text("Add POS Device", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                     }
@@ -331,10 +395,10 @@ fun BranchDetailScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "Device ${index + 1}", 
-                                    fontWeight = FontWeight.ExtraBold, 
+                                    text = "Device ${index + 1}",
+                                    fontWeight = FontWeight.ExtraBold,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -364,12 +428,15 @@ fun BranchDetailScreen(
 }
 
 @Composable
-private fun SectionHeader(title: String, paddingBottom: Dp = 16.dp) {
+private fun SectionHeader(
+    title: String,
+    paddingBottom: Dp = 16.dp,
+) {
     Text(
-        text = title, 
+        text = title,
         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
         color = MaterialTheme.colorScheme.onBackground,
-        modifier = Modifier.padding(bottom = paddingBottom)
+        modifier = Modifier.padding(bottom = paddingBottom),
     )
 }
 
@@ -377,13 +444,14 @@ private fun SectionHeader(title: String, paddingBottom: Dp = 16.dp) {
 private fun StatusIndicator(isActive: Boolean) {
     val color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
     val text = if (isActive) "Active" else "Inactive"
-    
+
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
         Box(
-            modifier = Modifier
-                .size(10.dp)
-                .clip(CircleShape)
-                .background(color)
+            modifier =
+                Modifier
+                    .size(10.dp)
+                    .clip(CircleShape)
+                    .background(color),
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
@@ -432,7 +500,14 @@ fun InsightCard(
 ) {
     val containerColor = if (isAlert) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surfaceContainerLow
     val textColor = if (isAlert) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSurface
-    val labelColor = if (isAlert) MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val labelColor =
+        if (isAlert) {
+            MaterialTheme.colorScheme.onErrorContainer.copy(
+                alpha = 0.8f,
+            )
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
 
     Card(
         modifier = modifier,

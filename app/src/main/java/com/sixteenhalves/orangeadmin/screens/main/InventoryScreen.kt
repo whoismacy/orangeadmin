@@ -7,7 +7,6 @@ import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 @Composable
 fun InventoryScreen(
     onNewBranch: () -> Unit,
-    onNavigateCSV: () -> Unit,
     mainViewModel: MainViewModel,
 ) {
     val branchesExist =
@@ -18,7 +17,7 @@ fun InventoryScreen(
     if (branchesExist) {
         PopulatedInventory()
     } else {
-        PopulatedInventory()
-//        EmptyInventory(onNewBranch, onNavigateCSV)
+//        PopulatedInventory()
+        EmptyInventory(onNewBranch)
     }
 }

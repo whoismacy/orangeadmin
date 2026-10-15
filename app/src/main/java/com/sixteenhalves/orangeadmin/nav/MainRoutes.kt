@@ -6,7 +6,6 @@ import com.sixteenhalves.orangeadmin.screens.main.BranchDeviceScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchLocationScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchNameScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchesScreen
-import com.sixteenhalves.orangeadmin.screens.main.CSVImportScreen
 import com.sixteenhalves.orangeadmin.screens.main.HomeScreen
 import com.sixteenhalves.orangeadmin.screens.main.InventoryScreen
 import com.sixteenhalves.orangeadmin.screens.main.SettingsAppDetailsScreen
@@ -26,8 +25,6 @@ sealed interface MainRoutes : AppRoute {
     @Serializable data object Branches : MainRoutes
 
     @Serializable data object Settings : MainRoutes
-
-    @Serializable data object CSVImport : MainRoutes
 }
 
 @Serializable
@@ -77,7 +74,6 @@ fun EntryProviderScope<AppRoute>.mainGraph(
             InventoryScreen(
                 mainViewModel = mainViewModel,
                 onNewBranch = { backStack.add(BranchRoutes.Name) },
-                onNavigateCSV = { backStack.add(MainRoutes.CSVImport) },
             )
         }
     }
@@ -103,10 +99,12 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             BranchLocationScreen(
                 onComplete = {
-                    // Simulating a successful branch addition, go to the detail or back to list
-                    backStack.removeLastOrNull() // pop Location
-                    backStack.removeLastOrNull() // pop Name
-                    // Or go straight to Detail:
+                    backStack.removeLastOrNull()
+                    backStack.removeLastOrNull()
+                    // I should trigger an api call that adds the new location
+                    // then either with the viewmodel after receiving the new branch_id from
+                    // the server add to the navigation stack the new location
+                    // or handle the error gracefully
                     backStack.add(BranchRoutes.Detail("NEW_BRANCH_ID"))
                 },
             )
@@ -116,8 +114,9 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             BranchDeviceScreen(
                 onSave = {
-                    // Simulating saving the POS device
-                    backStack.removeLastOrNull() // Return to Detail Screen
+                    // I should trigger an API call that registers the device and refreshes the stale pos device data
+                    // then return to the detail screen
+                    backStack.removeLastOrNull()
                 },
             )
         }
@@ -127,6 +126,7 @@ fun EntryProviderScope<AppRoute>.mainGraph(
             BranchDetailScreen(
                 branchId = route.branchId,
                 onAddDevice = { backStack.add(BranchRoutes.Device) },
+                onBack = { backStack.removeLastOrNull() },
             )
         }
     }
@@ -151,8 +151,5 @@ fun EntryProviderScope<AppRoute>.mainGraph(
     }
     entry<SettingsRoutes.AppDetails> {
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsAppDetailsScreen() }
-    }
-    entry<MainRoutes.CSVImport> {
-        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { CSVImportScreen() }
     }
 }
