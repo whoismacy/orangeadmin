@@ -68,7 +68,10 @@ object MockInventoryData {
 }
 
 @Composable
-fun PopulatedInventory(modifier: Modifier = Modifier) {
+fun PopulatedInventory(
+    onNavigateAddNewItem: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val products = MockInventoryData.items
 
     LazyColumn(
@@ -78,7 +81,7 @@ fun PopulatedInventory(modifier: Modifier = Modifier) {
     ) {
         item {
             AnimatedInventoryItem(index = 0) {
-                InventoryHeader()
+                InventoryHeader(onNavigateAddNewItem = onNavigateAddNewItem)
             }
         }
 
@@ -151,19 +154,38 @@ private fun AnimatedInventoryItem(
 }
 
 @Composable
-private fun InventoryHeader() {
-    Column(modifier = Modifier.padding(bottom = 8.dp)) {
-        Text(
-            text = "Inventory",
-            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Manage your products, pricing, and stock levels.",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+private fun InventoryHeader(onNavigateAddNewItem: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "Inventory",
+                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Manage your products, pricing, and stock levels.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        
+        androidx.compose.material3.IconButton(
+            onClick = onNavigateAddNewItem,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
+                contentDescription = "Add New Item",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
     }
 }
 

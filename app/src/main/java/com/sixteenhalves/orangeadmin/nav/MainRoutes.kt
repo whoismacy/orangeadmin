@@ -20,11 +20,15 @@ import kotlinx.serialization.Serializable
 sealed interface MainRoutes : AppRoute {
     @Serializable data object HomeRoute : MainRoutes
 
-    @Serializable data object Inventory : MainRoutes
-
     @Serializable data object Branches : MainRoutes
 
     @Serializable data object Settings : MainRoutes
+}
+
+@Serializable
+sealed interface InventoryRoutes : AppRoute {
+    @Serializable data object Home : InventoryRoutes
+    @Serializable data object AddNewItem : InventoryRoutes
 }
 
 @Serializable
@@ -36,6 +40,8 @@ sealed interface BranchRoutes : AppRoute {
     @Serializable data object Location : BranchRoutes
 
     @Serializable data object Device : BranchRoutes
+
+    @Serializable data class AddInventory(val branchId: String) : BranchRoutes
 
     @Serializable data class Detail(
         val branchId: String,
@@ -69,11 +75,20 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         }
     }
 
-    entry<MainRoutes.Inventory> {
+    entry<InventoryRoutes.Home> {
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             InventoryScreen(
                 mainViewModel = mainViewModel,
                 onNewBranch = { backStack.add(BranchRoutes.Name) },
+                onNavigateAddNewItem = { backStack.add(InventoryRoutes.AddNewItem) },
+            )
+        }
+    }
+    
+    entry<InventoryRoutes.AddNewItem> {
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
+            com.sixteenhalves.orangeadmin.screens.main.AddInventoryItemScreen(
+                onBack = { backStack.removeLastOrNull() }
             )
         }
     }
@@ -126,7 +141,16 @@ fun EntryProviderScope<AppRoute>.mainGraph(
             BranchDetailScreen(
                 branchId = route.branchId,
                 onAddDevice = { backStack.add(BranchRoutes.Device) },
+                onAddInventory = { backStack.add(BranchRoutes.AddInventory(route.branchId)) },
                 onBack = { backStack.removeLastOrNull() },
+            )
+        }
+    }
+    entry<BranchRoutes.AddInventory> { route ->
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
+            com.sixteenhalves.orangeadmin.screens.main.BranchAddInventoryScreen(
+                branchId = route.branchId,
+                onBack = { backStack.removeLastOrNull() }
             )
         }
     }
@@ -144,7 +168,13 @@ fun EntryProviderScope<AppRoute>.mainGraph(
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsThemeScreen(mainViewModel = mainViewModel) }
     }
     entry<SettingsRoutes.Biometrics> {
-        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsBiometricsScreen(mainViewModel = mainViewModel) }
+        MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                SettingsBiometricsScreen(mainViewModel = mainViewModel)
+            } else {
+                androidx.compose.material3.Text("Biometrics requires Android 11+")
+            }
+        }
     }
     entry<SettingsRoutes.Notifications> {
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) { SettingsNotificationsScreen(mainViewModel = mainViewModel) }

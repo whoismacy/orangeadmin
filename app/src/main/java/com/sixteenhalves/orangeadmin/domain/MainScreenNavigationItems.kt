@@ -19,7 +19,7 @@ enum class MainScreenNavigationItems(
     Inventory(
         "Inventory",
         R.drawable.baseline_inventory_2_24,
-        MainRoutes.Inventory,
+        com.sixteenhalves.orangeadmin.nav.InventoryRoutes.Home,
     ),
     Branches(
         "Branches",

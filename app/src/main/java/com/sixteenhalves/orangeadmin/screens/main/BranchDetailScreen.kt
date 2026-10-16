@@ -48,6 +48,7 @@ data class InventoryItem(
 fun BranchDetailScreen(
     branchId: String,
     onAddDevice: () -> Unit,
+    onAddInventory: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -213,14 +214,136 @@ fun BranchDetailScreen(
         Spacer(modifier = Modifier.height(40.dp))
 
         // Full Inventory Section
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        InventorySection(
+            fullInventory = fullInventory,
+            onAddInventory = onAddInventory
+        )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        // Devices Section
+        DevicesSection(
+            devicesCount = devicesCount,
+            onAddDevice = onAddDevice
+        )
+
+        Spacer(modifier = Modifier.height(80.dp))
+    }
+}
+
+@Composable
+private fun InventorySection(
+    fullInventory: List<InventoryItem>,
+    onAddInventory: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionHeader("Inventory Management", paddingBottom = 0.dp)
+        IconButton(
+            onClick = onAddInventory,
+            modifier =
+                Modifier
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
         ) {
-            SectionHeader("Inventory Management", paddingBottom = 0.dp)
+            Icon(
+                painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
+                contentDescription = "Add Item",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+            fullInventory.forEachIndexed { index, item ->
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                        Text(
+                            text = item.name,
+                            fontWeight = FontWeight.ExtraBold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val textColor =
+                            if (item.isLowStock) {
+                                MaterialTheme
+                                    .colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        val fontWeight = if (item.isLowStock) FontWeight.Bold else FontWeight.Normal
+                        Text(
+                            text = "${item.quantity} units remaining",
+                            color = textColor,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = fontWeight),
+                        )
+                    }
+                    Button(
+                        onClick = onAddInventory,
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier.height(40.dp),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    if (item.isLowStock) {
+                                        MaterialTheme
+                                            .colorScheme.errorContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.secondaryContainer
+                                    },
+                                contentColor =
+                                    if (item.isLowStock) {
+                                        MaterialTheme
+                                            .colorScheme.onErrorContainer
+                                    } else {
+                                        MaterialTheme.colorScheme.onSecondaryContainer
+                                    },
+                            ),
+                    ) {
+                        Text("Restock", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                    }
+                }
+                if (index < fullInventory.size - 1) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DevicesSection(
+    devicesCount: Int,
+    onAddDevice: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SectionHeader("POS Devices", paddingBottom = 0.dp)
+        if (devicesCount > 0) {
             IconButton(
-                onClick = { /* Add Item */ },
+                onClick = onAddDevice,
                 modifier =
                     Modifier
                         .clip(CircleShape)
@@ -228,13 +351,58 @@ fun BranchDetailScreen(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
-                    contentDescription = "Add Item",
+                    contentDescription = "Add Device",
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+    }
+    Spacer(modifier = Modifier.height(16.dp))
 
+    if (devicesCount == 0) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        ) {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(40.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_storefront_24),
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "No POS Devices",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "You haven't added any POS devices to this branch yet.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
+                    onClick = onAddDevice,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.height(48.dp),
+                ) {
+                    Text("Add POS Device", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+        }
+    } else {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -242,7 +410,7 @@ fun BranchDetailScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         ) {
             Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
-                fullInventory.forEachIndexed { index, item ->
+                repeat(devicesCount) { index ->
                     Row(
                         modifier =
                             Modifier
@@ -251,179 +419,34 @@ fun BranchDetailScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Column(modifier = Modifier.weight(1f).padding(end = 16.dp)) {
+                        Column {
                             Text(
-                                text = item.name,
+                                text = "Device ${index + 1}",
                                 fontWeight = FontWeight.ExtraBold,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            val textColor =
-                                if (item.isLowStock) {
-                                    MaterialTheme
-                                        .colorScheme.error
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            val fontWeight = if (item.isLowStock) FontWeight.Bold else FontWeight.Normal
                             Text(
-                                text = "${item.quantity} units remaining",
-                                color = textColor,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = fontWeight),
+                                text = "Serial: XYZ-${1000 + index}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        Button(
-                            onClick = { /* Restock Action */ },
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                            modifier = Modifier.height(40.dp),
-                            colors =
-                                ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (item.isLowStock) {
-                                            MaterialTheme
-                                                .colorScheme.errorContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.secondaryContainer
-                                        },
-                                    contentColor =
-                                        if (item.isLowStock) {
-                                            MaterialTheme
-                                                .colorScheme.onErrorContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.onSecondaryContainer
-                                        },
-                                ),
-                        ) {
-                            Text("Restock", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-                        }
+                        Text(
+                            text = "Active",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        )
                     }
-                    if (index < fullInventory.size - 1) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                    if (index < devicesCount - 1) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+                        )
                     }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Devices Section
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            SectionHeader("POS Devices", paddingBottom = 0.dp)
-            if (devicesCount > 0) {
-                IconButton(
-                    onClick = onAddDevice,
-                    modifier =
-                        Modifier
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primaryContainer),
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
-                        contentDescription = "Add Device",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (devicesCount == 0) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-            ) {
-                Column(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(40.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_storefront_24),
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(
-                        text = "No POS Devices",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "You haven't added any POS devices to this branch yet.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Button(
-                        onClick = onAddDevice,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.height(48.dp),
-                    ) {
-                        Text("Add POS Device", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-                    }
-                }
-            }
-        } else {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-            ) {
-                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
-                    repeat(devicesCount) { index ->
-                        Row(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Device ${index + 1}",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Serial: XYZ-${1000 + index}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Text(
-                                text = "Active",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                            )
-                        }
-                        if (index < devicesCount - 1) {
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }
 

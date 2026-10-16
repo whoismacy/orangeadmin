@@ -38,6 +38,7 @@ fun MainAppShell(
                     when (currentRoute) {
                         is BranchRoutes -> (it.route == MainRoutes.Branches) || (it.route == BranchRoutes.Home)
                         is SettingsRoutes -> (it.route == MainRoutes.Settings) || (it.route == SettingsRoutes.Home)
+                        is InventoryRoutes -> (it.route == InventoryRoutes.Home)
                         else -> it.route == currentRoute
                     }
                 item(
