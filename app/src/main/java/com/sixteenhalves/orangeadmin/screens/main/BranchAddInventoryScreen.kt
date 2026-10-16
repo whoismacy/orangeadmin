@@ -45,10 +45,22 @@ import com.sixteenhalves.orangeadmin.R
 fun BranchAddInventoryScreen(
     branchId: String,
     onBack: () -> Unit,
+    onAddNewItem: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // We get the full mock inventory to display, sorted to show low stock first
-    val fullInventory = MockInventoryData.items.sortedBy { !it.isLowStock }
+    val originalItems = remember { MockInventoryData.items.sortedBy { !it.isLowStock } }
+
+    val quantities =
+        remember {
+            androidx.compose.runtime.mutableStateMapOf<String, Int>().apply {
+                originalItems.forEach { put(it.id, it.stock) }
+            }
+        }
+    val deletedItems = remember { androidx.compose.runtime.mutableStateListOf<String>() }
+
+    val displayItems = originalItems.filter { it.id !in deletedItems }
+    val hasChanges = deletedItems.isNotEmpty() || originalItems.any { it.stock != quantities[it.id] }
 
     Column(
         modifier =
@@ -70,9 +82,8 @@ fun BranchAddInventoryScreen(
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainerLow),
             ) {
-                // Using an existing proxy drawable for back
                 Icon(
-                    painter = painterResource(id = R.drawable.outline_settings_24),
+                    painter = painterResource(id = R.drawable.outline_arrow_back_24),
                     contentDescription = "Back",
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
@@ -97,16 +108,34 @@ fun BranchAddInventoryScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Available Items",
+                        text = "Available Items (${displayItems.size})",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
+                    IconButton(
+                        onClick = onAddNewItem,
+                        modifier =
+                            Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_add_circle_outline_24),
+                            contentDescription = "Create New Item",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            items(fullInventory) { item ->
-                AddInventoryCard(item = item)
+            items(displayItems, key = { it.id }) { item ->
+                AddInventoryCard(
+                    item = item,
+                    quantity = quantities[item.id] ?: item.stock,
+                    onQuantityChange = { quantities[item.id] = it },
+                    onDelete = { deletedItems.add(item.id) },
+                )
             }
         }
 
@@ -128,6 +157,7 @@ fun BranchAddInventoryScreen(
                         .fillMaxWidth()
                         .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
+                enabled = hasChanges,
             ) {
                 Text(
                     text = "Save Changes",
@@ -139,12 +169,13 @@ fun BranchAddInventoryScreen(
 }
 
 @Composable
-private fun AddInventoryCard(item: InventoryProduct) {
-    var quantity by remember { androidx.compose.runtime.mutableIntStateOf(item.stock) }
+private fun AddInventoryCard(
+    item: InventoryProduct,
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit,
+    onDelete: () -> Unit,
+) {
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var isDeleted by remember { mutableStateOf(false) }
-
-    if (isDeleted) return
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -212,7 +243,7 @@ private fun AddInventoryCard(item: InventoryProduct) {
                 // Delete Button
                 TextButton(
                     onClick = { showDeleteDialog = true },
-                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text("Remove", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                 }
@@ -223,7 +254,7 @@ private fun AddInventoryCard(item: InventoryProduct) {
                     horizontalArrangement = Arrangement.End,
                 ) {
                     IconButton(
-                        onClick = { if (quantity > 0) quantity-- },
+                        onClick = { if (quantity > 0) onQuantityChange(quantity - 1) },
                         modifier =
                             Modifier
                                 .size(40.dp)
@@ -247,7 +278,7 @@ private fun AddInventoryCard(item: InventoryProduct) {
                     )
 
                     IconButton(
-                        onClick = { quantity++ },
+                        onClick = { onQuantityChange(quantity + 1) },
                         modifier =
                             Modifier
                                 .size(40.dp)
@@ -294,11 +325,11 @@ private fun AddInventoryCard(item: InventoryProduct) {
             confirmButton = {
                 Button(
                     onClick = {
-                        isDeleted = true
+                        onDelete()
                         showDeleteDialog = false
                     },
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 ) {
                     Text("Remove", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                 }

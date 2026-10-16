@@ -1,6 +1,7 @@
 package com.sixteenhalves.orangeadmin.nav
 
 import androidx.navigation3.runtime.EntryProviderScope
+import com.sixteenhalves.orangeadmin.screens.main.BranchAddInventoryScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchDetailScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchDeviceScreen
 import com.sixteenhalves.orangeadmin.screens.main.BranchLocationScreen
@@ -28,6 +29,7 @@ sealed interface MainRoutes : AppRoute {
 @Serializable
 sealed interface InventoryRoutes : AppRoute {
     @Serializable data object Home : InventoryRoutes
+
     @Serializable data object AddNewItem : InventoryRoutes
 }
 
@@ -41,7 +43,9 @@ sealed interface BranchRoutes : AppRoute {
 
     @Serializable data object Device : BranchRoutes
 
-    @Serializable data class AddInventory(val branchId: String) : BranchRoutes
+    @Serializable data class AddInventory(
+        val branchId: String,
+    ) : BranchRoutes
 
     @Serializable data class Detail(
         val branchId: String,
@@ -84,11 +88,11 @@ fun EntryProviderScope<AppRoute>.mainGraph(
             )
         }
     }
-    
+
     entry<InventoryRoutes.AddNewItem> {
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
             com.sixteenhalves.orangeadmin.screens.main.AddInventoryItemScreen(
-                onBack = { backStack.removeLastOrNull() }
+                onBack = { backStack.removeLastOrNull() },
             )
         }
     }
@@ -148,9 +152,10 @@ fun EntryProviderScope<AppRoute>.mainGraph(
     }
     entry<BranchRoutes.AddInventory> { route ->
         MainAppShell(backStack = backStack, mainViewModel = mainViewModel) {
-            com.sixteenhalves.orangeadmin.screens.main.BranchAddInventoryScreen(
+            BranchAddInventoryScreen(
                 branchId = route.branchId,
-                onBack = { backStack.removeLastOrNull() }
+                onBack = { backStack.removeLastOrNull() },
+                onAddNewItem = { backStack.add(InventoryRoutes.AddNewItem) }
             )
         }
     }
