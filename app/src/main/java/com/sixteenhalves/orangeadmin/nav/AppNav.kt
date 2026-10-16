@@ -10,7 +10,9 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,6 +20,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.viewmodels.AuthViewModel
 import com.sixteenhalves.orangeadmin.viewmodels.MainViewModel
 
@@ -29,6 +32,20 @@ fun AppNav(
 ) {
     val isLoggedIn = authViewModel.isLoggedIn.collectAsStateWithLifecycle().value
     val backStack = remember { mutableStateListOf(if (isLoggedIn) MainRoutes.HomeRoute else AuthRoutes.AuthLandingRoute) }
+    val snackbarHostState = mainViewModel.snackbarHostState
+
+    LaunchedEffect(Unit) {
+        EventManager.channelFlow.collect { event ->
+            when (event) {
+                is EventManager.AppEvent.ShowEvent -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Long,
+                    )
+                }
+            }
+        }
+    }
 
     NavDisplay(
         modifier = modifier,

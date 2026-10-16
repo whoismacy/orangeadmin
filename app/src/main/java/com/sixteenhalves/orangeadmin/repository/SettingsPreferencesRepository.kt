@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.sixteenhalves.orangeadmin.domain.BiometricPreference
 import com.sixteenhalves.orangeadmin.domain.NotificationPreferences
 import com.sixteenhalves.orangeadmin.domain.ThemePreference
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +24,7 @@ class SettingsPreferencesRepository
     ) {
         private val THEME_KEY = stringPreferencesKey("theme_preference")
         private val LOW_STOCK_ALERTS_KEY = booleanPreferencesKey("low_stock_alerts")
+        private val ENABLE_BIOMETRICS = booleanPreferencesKey("enable_biometrics")
 
         val themePreference: Flow<ThemePreference> =
             context.dataStore.data.map { preferences ->
@@ -37,6 +39,11 @@ class SettingsPreferencesRepository
                 )
             }
 
+        val biometricsPreference: Flow<BiometricPreference> =
+            context.dataStore.data.map { preferences ->
+                BiometricPreference(enabled = preferences[ENABLE_BIOMETRICS] ?: false)
+            }
+
         suspend fun updateThemePreference(themePreference: ThemePreference) {
             context.dataStore.edit { preferences ->
                 preferences[THEME_KEY] = themePreference.name
@@ -46,6 +53,12 @@ class SettingsPreferencesRepository
         suspend fun updateNotificationPreference(lowStockAlerts: Boolean? = null) {
             context.dataStore.edit { preferences ->
                 lowStockAlerts?.let { preferences[LOW_STOCK_ALERTS_KEY] = it }
+            }
+        }
+
+        suspend fun updateBiometricPreference(enabled: Boolean? = false) {
+            context.dataStore.edit { preferences ->
+                enabled?.let { preferences[ENABLE_BIOMETRICS] = enabled }
             }
         }
     }

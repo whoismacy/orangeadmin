@@ -1,13 +1,16 @@
 package com.sixteenhalves.orangeadmin.viewmodels
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.SnackbarHostState
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sixteenhalves.orangeadmin.domain.BiometricPreference
 import com.sixteenhalves.orangeadmin.domain.EventManager
 import com.sixteenhalves.orangeadmin.domain.MainApplicationState
 import com.sixteenhalves.orangeadmin.domain.NotificationPreferences
@@ -57,6 +60,15 @@ class MainViewModel
                 initialValue = NotificationPreferences(),
             )
 
+        val biometricPreference: StateFlow<BiometricPreference> =
+            settingsPreferencesRepository
+                .biometricsPreference
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = BiometricPreference(),
+                )
+
         val snackbarHostState = SnackbarHostState()
 
         init {
@@ -76,8 +88,16 @@ class MainViewModel
 
         fun isBiometricsAvailable(context: Context): Boolean = biometricRepository.isBiometricAvailable(context)
 
-        fun showBiometricPrompt(activity: FragmentActivity) {
-            biometricRepository.showBiometricPrompt(activity, onFailure = {}, onSuccess = {})
+        fun showBiometricPrompt(
+            activity: FragmentActivity,
+            onSuccess: () -> Unit = {},
+            onFailure: () -> Unit = {},
+        ) {
+            biometricRepository.showBiometricPrompt(
+                activity = activity,
+                onFailure = onFailure,
+                onSuccess = onSuccess,
+            )
         }
 
         fun updateTheme(themePreference: ThemePreference) {
@@ -92,6 +112,19 @@ class MainViewModel
                     lowStockAlerts = lowStockAlerts,
                 )
             }
+        }
+
+        fun updateBiometricPreference(enabled: Boolean) {
+            viewModelScope.launch {
+                settingsPreferencesRepository.updateBiometricPreference(
+                    enabled = enabled,
+                )
+            }
+        }
+
+        @RequiresApi(Build.VERSION_CODES.R)
+        fun promptEnrollBiometric(context: Context) {
+            biometricRepository.promptEnrollBiometric(context)
         }
 
         fun testNotification(context: Context) {

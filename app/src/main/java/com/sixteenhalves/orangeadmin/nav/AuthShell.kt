@@ -29,18 +29,6 @@ fun AuthShell(
             .collectAsStateWithLifecycle()
             .value
 
-    LaunchedEffect(Unit) {
-        EventManager.channelFlow.collect { event ->
-            when (event) {
-                is EventManager.AppEvent.ShowEvent -> {
-                    snackbarHostState.showSnackbar(
-                        message = event.message,
-                        duration = SnackbarDuration.Long,
-                    )
-                }
-            }
-        }
-    }
     Scaffold(
         snackbarHost = {
             SnackbarHost(snackbarHostState)

@@ -30,28 +30,16 @@ fun MainAppShell(
     val snackbarHostState = mainViewModel.snackbarHostState
     val mainApplicationState = mainViewModel.mainApplicationState.collectAsStateWithLifecycle().value
 
-    LaunchedEffect(Unit) {
-        EventManager.channelFlow.collect { event ->
-            when (event) {
-                is EventManager.AppEvent.ShowEvent -> {
-                    snackbarHostState.showSnackbar(
-                        message = event.message,
-                        duration = SnackbarDuration.Short,
-                    )
-                }
-            }
-        }
-    }
-
     NavigationSuiteScaffold(
         modifier = modifier,
         navigationSuiteItems = {
             MainScreenNavigationItems.entries.forEach {
-                val isSelected = when (currentRoute) {
-                    is BranchRoutes -> (it.route == MainRoutes.Branches) || (it.route == BranchRoutes.Home)
-                    is SettingsRoutes -> (it.route == MainRoutes.Settings) || (it.route == SettingsRoutes.Home)
-                    else -> it.route == currentRoute
-                }
+                val isSelected =
+                    when (currentRoute) {
+                        is BranchRoutes -> (it.route == MainRoutes.Branches) || (it.route == BranchRoutes.Home)
+                        is SettingsRoutes -> (it.route == MainRoutes.Settings) || (it.route == SettingsRoutes.Home)
+                        else -> it.route == currentRoute
+                    }
                 item(
                     onClick = { backStack.add(it.route) },
                     label = { Text(it.title) },
